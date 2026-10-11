@@ -185,6 +185,42 @@ with open(config_file, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
 
 print(f"[Claude Code] {config_file} を更新しました。")
+
+# T3 Code (settings.json) の claudeAgent プロバイダを自動構成
+t3_settings_path = "/root/.t3/userdata/settings.json"
+if os.path.exists(os.path.dirname(t3_settings_path)):
+    try:
+        t3_data = {}
+        if os.path.exists(t3_settings_path):
+            with open(t3_settings_path, "r", encoding="utf-8") as f:
+                t3_data = json.load(f)
+        
+        if "providerInstances" not in t3_data:
+            t3_data["providerInstances"] = {}
+        
+        if "claudeAgent" not in t3_data["providerInstances"]:
+            t3_data["providerInstances"]["claudeAgent"] = {
+                "driver": "claudeAgent",
+                "enabled": True,
+                "config": {
+                    "binaryPath": "/usr/local/bin/claude",
+                    "homePath": "",
+                    "customModels": [],
+                    "launchArgs": "",
+                    "autoCompactWindow": ""
+                }
+            }
+        else:
+            t3_data["providerInstances"]["claudeAgent"]["enabled"] = True
+            if "config" not in t3_data["providerInstances"]["claudeAgent"]:
+                t3_data["providerInstances"]["claudeAgent"]["config"] = {}
+            t3_data["providerInstances"]["claudeAgent"]["config"]["binaryPath"] = "/usr/local/bin/claude"
+        
+        with open(t3_settings_path, "w", encoding="utf-8") as f:
+            json.dump(t3_data, f, indent=2, ensure_ascii=False)
+        print(f"[Claude Code] T3 Code 設定 ({t3_settings_path}) の Claude プロバイダを有効化しました。")
+    except Exception as e:
+        print(f"[Claude Code] (注意) T3 Code 設定ファイルの更新をスキップしました: {e}")
 EOF
 
 # /etc/profile.d/claude-vertex.sh にシステム全体の環境変数を配置
@@ -281,7 +317,9 @@ echo -e "3. アカウントまたはサービスアカウントに以下の IAM 
 echo -e "   - ${CYAN}roles/aiplatform.user${NC} (Vertex AI ユーザー)"
 echo ""
 echo -e "${GREEN}🚀 利用方法:${NC}"
-echo -e "  - 起動コマンド: ${CYAN}claude${NC}"
-echo -e "  - 状態確認    : 起動後に ${CYAN}/status${NC} を入力"
-echo -e "  - 設定再実行  : ${CYAN}t3-install-claude${NC} または ${CYAN}bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh${NC}"
+echo -e "  - 単体 CLI 起動 : ${CYAN}claude${NC}"
+echo -e "  - 状態確認      : 起動後に ${CYAN}/status${NC} を入力"
+echo -e "  - T3 Code 連携  : ${CYAN}t3-stop && t3-start${NC} で T3 Code サーバーを再起動すると、"
+echo -e "                    Web 画面 (http://127.0.0.1:3773) のモデル選択に Claude が有効化されます。"
+echo -e "  - 設定再実行    : ${CYAN}t3-install-claude${NC} または ${CYAN}bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh${NC}"
 echo ""

@@ -341,6 +341,7 @@ Claude Code を Vertex AI 経由で使用するには、以下の Google Cloud �
 
 ### 起動と利用方法
 
+#### 1. 単体 CLI として使う場合
 Termux または Ubuntu 内から直接 `claude` コマンドで起動できます。
 
 ```bash
@@ -352,6 +353,16 @@ claude
 ```
 
 `/status` を実行した際、`API provider` に **`Google Vertex AI`**、`GCP project` に指定したプロジェクトIDが表示されていればセットアップ成功です。
+
+#### 2. T3 Code のチャット UI で使う場合
+セットアップスクリプトを実行すると、T3 Code の設定ファイル（`~/.t3/userdata/settings.json`）の Claude プロバイダ (`claudeAgent`) が自動的に有効化されます。
+
+1. T3 Code サーバーを再起動します:
+   ```bash
+   t3-stop && t3-start
+   ```
+2. ブラウザで **`http://127.0.0.1:3773`** を開きます。
+3. チャット画面上部のプロバイダ・モデル選択メニューに **Claude**（Claude 3.7 Sonnet, Claude 3.5 Sonnet 等）が表示され、Vertex AI 経由で直接チャットや自律コーディングエージェントとして利用可能になります。
 
 ---
 
