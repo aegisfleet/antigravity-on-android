@@ -444,6 +444,7 @@ setting-up-antigravity-on-android/
     ├── codex_t3_bridge.py      # T3 Code ↔ Codex CLI 透過プロキシブリッジ (モデル名への残量動的付加)
     ├── install-gh.sh           # GitHub CLI (gh) セットアップ & Termux 連携
     ├── setup-claude-vertex.sh  # Claude Code (Vertex AI) セットアップ & Termux 連携
+    ├── claude_t3_bridge.sh     # T3 Code ↔ Claude Code ブリッジ (root制約回避/モデル最適化)
     └── install-android-sdk.sh  # Android SDK (aapt2 ARM64対応) セットアップ
 ```
 
@@ -487,6 +488,15 @@ rm -f ~/.gemini/antigravity-cli/antigravity-oauth-token
 agy
 exit
 ```
+
+### 4. T3 Code で Claude Code 使用時に `Claude runtime stream failed` / `turn/setPermissionMode failed` が出る場合
+このエラーは主に以下の 2 点が原因です:
+1. **root ユーザーでのパーミッション自動スキップ制限**:
+   - Claude Code は通常、root 権限（PRoot の UID 0）環境で `--dangerously-skip-permissions` を実行することをセキュリティポリシーで制限しています。
+   - **対策**: 環境変数 `IS_SANDBOX=1` を指定するか、本リポジトリ提供のブリッジスクリプト（`scripts/claude_t3_bridge.sh`）を経由することで、PRoot サンドボックス環境として安全に実行許可されます。
+2. **Claude Opus の割当クォータ枯渇 (`429 RESOURCE_EXHAUSTED`)**:
+   - Claude Code はデフォルトで Opus モデルを呼び出そうとしますが、多くの GCP プロジェクトでは Opus のクォータが未割り当てです。
+   - **対策**: モデル選択で **Claude 3.7 Sonnet** などを選択するか、環境変数 `ANTHROPIC_DEFAULT_OPUS_MODEL="claude-3-7-sonnet@20250219"` を設定して Sonnet に向けることで解消します（`claude_t3_bridge.sh` が自動適用します）。
 
 ---
 

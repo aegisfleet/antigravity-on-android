@@ -170,7 +170,7 @@ pkill -f "t3 serve" 2>/dev/null || true
 sleep 1
 
 echo "[*] T3 Code サーバーを起動中..."
-nohup proot-distro login ubuntu -- bash -c "exec /usr/local/bin/t3 serve --host 0.0.0.0" < /dev/null > "$LOG_FILE" 2>&1 &
+nohup proot-distro login ubuntu -- bash -c "export IS_SANDBOX=1; exec /usr/local/bin/t3 serve --host 0.0.0.0" < /dev/null > "$LOG_FILE" 2>&1 &
 NEW_PID=$!
 echo "$NEW_PID" > "$PID_FILE"
 sleep 3

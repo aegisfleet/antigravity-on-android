@@ -174,9 +174,13 @@ if os.path.exists(config_file):
 if "env" not in data or not isinstance(data["env"], dict):
     data["env"] = {}
 
+data["env"]["IS_SANDBOX"] = "1"
 data["env"]["CLAUDE_CODE_USE_VERTEX"] = "1"
 data["env"]["ANTHROPIC_VERTEX_PROJECT_ID"] = "$PROJECT_ID"
 data["env"]["CLOUD_ML_REGION"] = "$REGION"
+data["env"]["ANTHROPIC_MODEL"] = "claude-3-7-sonnet@20250219"
+data["env"]["ANTHROPIC_DEFAULT_SONNET_MODEL"] = "claude-3-7-sonnet@20250219"
+data["env"]["ANTHROPIC_DEFAULT_OPUS_MODEL"] = "claude-3-7-sonnet@20250219"
 
 # 自動認証リフレッシュ設定（ADC）
 data["gcpAuthRefresh"] = "gcloud auth application-default login --no-launch-browser"
@@ -198,12 +202,13 @@ if os.path.exists(os.path.dirname(t3_settings_path)):
         if "providerInstances" not in t3_data:
             t3_data["providerInstances"] = {}
         
+        bridge_path = "/usr/local/bin/claude-t3-bridge"
         if "claudeAgent" not in t3_data["providerInstances"]:
             t3_data["providerInstances"]["claudeAgent"] = {
                 "driver": "claudeAgent",
                 "enabled": True,
                 "config": {
-                    "binaryPath": "/usr/local/bin/claude",
+                    "binaryPath": bridge_path,
                     "homePath": "",
                     "customModels": [],
                     "launchArgs": "",
@@ -214,11 +219,11 @@ if os.path.exists(os.path.dirname(t3_settings_path)):
             t3_data["providerInstances"]["claudeAgent"]["enabled"] = True
             if "config" not in t3_data["providerInstances"]["claudeAgent"]:
                 t3_data["providerInstances"]["claudeAgent"]["config"] = {}
-            t3_data["providerInstances"]["claudeAgent"]["config"]["binaryPath"] = "/usr/local/bin/claude"
+            t3_data["providerInstances"]["claudeAgent"]["config"]["binaryPath"] = bridge_path
         
         with open(t3_settings_path, "w", encoding="utf-8") as f:
             json.dump(t3_data, f, indent=2, ensure_ascii=False)
-        print(f"[Claude Code] T3 Code 設定 ({t3_settings_path}) の Claude プロバイダを有効化しました。")
+        print(f"[Claude Code] T3 Code 設定 ({t3_settings_path}) の Claude プロバイダを有効化しました (binaryPath: {bridge_path})。")
     except Exception as e:
         print(f"[Claude Code] (注意) T3 Code 設定ファイルの更新をスキップしました: {e}")
 EOF
@@ -227,21 +232,28 @@ EOF
 PROFILE_FILE="/etc/profile.d/claude-vertex.sh"
 cat << EOF > "$PROFILE_FILE"
 # Claude Code Vertex AI Environment Configuration
+export IS_SANDBOX="1"
 export CLAUDE_CODE_USE_VERTEX="1"
 export ANTHROPIC_VERTEX_PROJECT_ID="${PROJECT_ID}"
 export CLOUD_ML_REGION="${REGION}"
+export ANTHROPIC_MODEL="claude-3-7-sonnet@20250219"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-3-7-sonnet@20250219"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="claude-3-7-sonnet@20250219"
 EOF
 chmod 644 "$PROFILE_FILE"
 
 # 現在のシェルおよび ~/.bashrc にも確実にエクスポート
+export IS_SANDBOX="1"
 export CLAUDE_CODE_USE_VERTEX="1"
 export ANTHROPIC_VERTEX_PROJECT_ID="${PROJECT_ID}"
 export CLOUD_ML_REGION="${REGION}"
 
 if [ -f "/root/.bashrc" ]; then
+    sed -i '/IS_SANDBOX/d' /root/.bashrc 2>/dev/null || true
     sed -i '/CLAUDE_CODE_USE_VERTEX/d' /root/.bashrc 2>/dev/null || true
     sed -i '/ANTHROPIC_VERTEX_PROJECT_ID/d' /root/.bashrc 2>/dev/null || true
     sed -i '/CLOUD_ML_REGION/d' /root/.bashrc 2>/dev/null || true
+    echo 'export IS_SANDBOX="1"' >> /root/.bashrc
     echo 'export CLAUDE_CODE_USE_VERTEX="1"' >> /root/.bashrc
     echo "export ANTHROPIC_VERTEX_PROJECT_ID=\"${PROJECT_ID}\"" >> /root/.bashrc
     echo "export CLOUD_ML_REGION=\"${REGION}\"" >> /root/.bashrc
@@ -251,6 +263,10 @@ fi
 mkdir -p /usr/local/bin
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2>/dev/null || true
+if [ -f "${SCRIPT_DIR}/claude_t3_bridge.sh" ]; then
+    chmod +x "${SCRIPT_DIR}/claude_t3_bridge.sh"
+    ln -sf "${SCRIPT_DIR}/claude_t3_bridge.sh" /usr/local/bin/claude-t3-bridge 2>/dev/null || true
+fi
 
 # Termux コマンドの作成 (Termux 環境が存在する場合)
 PREFIX_BIN="/data/data/com.termux/files/usr/bin"
