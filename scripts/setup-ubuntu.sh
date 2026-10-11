@@ -75,6 +75,17 @@ if [ "$INSTALL_GH" -eq 1 ]; then
     bash "${SCRIPT_DIR}/install-gh.sh"
 fi
 
+# 8. Optional: Claude Code on Vertex AI
+INSTALL_CLAUDE="${INSTALL_CLAUDE:-0}"
+if [ "$INSTALL_CLAUDE" -eq 1 ]; then
+    echo "[Ubuntu] オプション: Claude Code (Vertex AI) をセットアップ中..."
+    bash "${SCRIPT_DIR}/setup-claude-vertex.sh"
+fi
+
+# Shortcut symlinks
+mkdir -p /usr/local/bin
+ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2>/dev/null || true
+
 # Ensure paths in /root/.bashrc
 if ! grep -q '/usr/local/bin' /root/.bashrc 2>/dev/null; then
     echo 'export PATH="/usr/local/bin:$PATH"' >> /root/.bashrc

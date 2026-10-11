@@ -72,6 +72,20 @@ if [ "$INSTALL_GH" -eq 0 ] && [ -t 0 ]; then
     esac
 fi
 
+INSTALL_CLAUDE="${INSTALL_CLAUDE:-0}"
+if [ "$INSTALL_CLAUDE" -eq 0 ] && [ -t 0 ]; then
+    echo -e "${YELLOW}Claude Code (Google Vertex AI 連携) もセットアップしますか？ [y/N]: ${NC}"
+    read -r ans || ans="n"
+    case "$ans" in
+        [yY][eE][sS]|[yY])
+            INSTALL_CLAUDE=1
+            ;;
+        *)
+            INSTALL_CLAUDE=0
+            ;;
+    esac
+fi
+
 # 3. Termux host dependencies
 echo -e "${BLUE}[1/4] Termux ホストのパッケージを更新・インストール中...${NC}"
 pkg update -y
@@ -121,6 +135,7 @@ proot-distro login ubuntu -- /bin/bash -c "
     export INSTALL_ANDROID_SDK=\"$INSTALL_ANDROID_SDK\"
     export INSTALL_CODEX=\"$INSTALL_CODEX\"
     export INSTALL_GH=\"$INSTALL_GH\"
+    export INSTALL_CLAUDE=\"$INSTALL_CLAUDE\"
     bash /root/setting-up-antigravity-on-android/scripts/setup-ubuntu.sh
 " < /dev/null
 
@@ -273,22 +288,38 @@ proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/script
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-sdk"
 
+# t3-install-claude
+cat << 'EOF' > "${PREFIX_BIN}/t3-install-claude"
+#!/data/data/com.termux/files/usr/bin/bash
+proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh
+EOF
+chmod +x "${PREFIX_BIN}/t3-install-claude"
+
+# claude (Termux から直接 claude コマンドを実行)
+cat << 'EOF' > "${PREFIX_BIN}/claude"
+#!/data/data/com.termux/files/usr/bin/bash
+proot-distro login ubuntu -- claude "$@"
+EOF
+chmod +x "${PREFIX_BIN}/claude"
+
 echo ""
 echo -e "${GREEN}================================================================${NC}"
 echo -e "${GREEN}  セットアップが完了しました！${NC}"
 echo -e "${GREEN}================================================================${NC}"
 echo ""
 echo -e "利用可能なコマンド:"
-echo -e "  ${CYAN}t3-start${NC}         : T3 Code サーバーを起動 (http://127.0.0.1:3773)"
-echo -e "  ${CYAN}t3-stop${NC}          : T3 Code サーバーを停止"
-echo -e "  ${CYAN}t3-status${NC}        : サーバーの稼働状態とログを確認"
-echo -e "  ${CYAN}t3-quota${NC}         : Antigravity の利用状況・残りクォータを確認"
-echo -e "  ${CYAN}t3-shell${NC}         : Ubuntu PRoot 環境のシェルにログイン"
-echo -e "  ${CYAN}codex${NC}            : OpenAI Codex CLI（'codex login' などを Termux から直接実行可能）"
-echo -e "  ${CYAN}gh${NC}               : GitHub CLI（'gh auth login' などを Termux から直接実行可能）"
-echo -e "  ${CYAN}t3-install-codex${NC} : OpenAI Codex CLI のセットアップ（後からいつでも実行可能）"
-echo -e "  ${CYAN}t3-install-gh${NC}    : GitHub CLI のセットアップ（後からいつでも実行可能）"
-echo -e "  ${CYAN}t3-install-sdk${NC}   : Android SDK (APKビルド環境) のセットアップ（後からいつでも実行可能）"
+echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (http://127.0.0.1:3773)"
+echo -e "  ${CYAN}t3-stop${NC}            : T3 Code サーバーを停止"
+echo -e "  ${CYAN}t3-status${NC}          : サーバーの稼働状態とログを確認"
+echo -e "  ${CYAN}t3-quota${NC}           : Antigravity の利用状況・残りクォータを確認"
+echo -e "  ${CYAN}t3-shell${NC}           : Ubuntu PRoot 環境のシェルにログイン"
+echo -e "  ${CYAN}codex${NC}              : OpenAI Codex CLI（'codex login' などを Termux から直接実行可能）"
+echo -e "  ${CYAN}gh${NC}                 : GitHub CLI（'gh auth login' などを Termux から直接実行可能）"
+echo -e "  ${CYAN}claude${NC}             : Claude Code CLI (Google Cloud Vertex AI 連携)"
+echo -e "  ${CYAN}t3-install-codex${NC}   : OpenAI Codex CLI のセットアップ（後からいつでも実行可能）"
+echo -e "  ${CYAN}t3-install-gh${NC}      : GitHub CLI のセットアップ（後からいつでも実行可能）"
+echo -e "  ${CYAN}t3-install-claude${NC}  : Claude Code (Vertex AI) のセットアップ（後からいつでも実行可能）"
+echo -e "  ${CYAN}t3-install-sdk${NC}     : Android SDK (APKビルド環境) のセットアップ（後からいつでも実行可能）"
 echo ""
 echo -e "${YELLOW}💡 【初回のみ】Antigravity の Google アカウント認証を行ってください:${NC}"
 echo -e "   1. ${CYAN}t3-shell${NC} を実行して Ubuntu シェルに入ります。"

@@ -57,13 +57,17 @@ Android 上の **Termux**（Google Play 版 / GitHub Releases 版 / F-Droid 版�
   - 軽量プロキシブリッジ (`scripts/codex_t3_bridge.py`) により、T3 Code のモデル選択画面で Codex モデル（GPT-6-Luna 等）の横にもリアルタイム残量（`[残99%]` 等）を自動付加。
 - 🐙 **GitHub CLI (`gh`) 連携（オプション）**:
   - 公式最新 APT リポジトリから ARM64 向け `gh` を導入。OAuth デバイス認証（`gh auth login`）で Git 認証ヘルパーや Pull Request・Issue 操作を自動完結。
+- 🔮 **Claude Code CLI (Google Cloud Vertex AI 連携・オプション)**:
+  - Anthropic 公式の **Claude Code CLI (`@anthropic-ai/claude-code`)** を Google Cloud Vertex AI (Agent Platform) 経由で完全セットアップ。
+  - セットアップ時に **GCP プロジェクトID** と **リージョン** を対話的に入力・自動構成。
+  - `gcloud` の Application Default Credentials (ADC) や `~/.claude/settings.json` の自動連携により、企業の GCP 課金・IAM 権限管理のもとで Claude 3.7 / 3.5 モデルを活用可能。
 - 🔔 **Android ネイティブ通知連携 (Termux:API)**:
   - **Antigravity & Codex 両対応**: AI のタスク・思考処理が完了したタイミングで、Android システムの通知（ヘッドアップ通知・サウンド付き）を自動発行。
   - **画面 OFF・バックグラウンド完全対応**: ブラウザを閉じたり別アプリを操作していても、Termux の常駐サービス経由で処理完了を確実に察知。
   - **スマートな通知管理**: 通知トレイが溢れないよう、直前の通知を自動で上書き管理（ID固定）。
   - ※ 通知をオフにしたい場合は環境変数 `TERMUX_NOTIFICATION=0` を指定して起動できます。
 - 📱 **直感的な操作コマンド**:
-  - `t3-start`、`t3-stop`、`t3-status`、`t3-quota`、`t3-shell`、`codex`、`gh`、`t3-install-codex`、`t3-install-gh` などの Termux コマンドを自動生成。
+  - `t3-start`、`t3-stop`、`t3-status`、`t3-quota`、`t3-shell`、`codex`、`gh`、`claude`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` などの Termux コマンドを自動生成。
 
 ---
 
@@ -120,9 +124,10 @@ curl -fsSL "https://raw.githubusercontent.com/aegisfleet/setting-up-antigravity-
 > 1. `Android SDK (APKビルド環境) もセットアップしますか？ [y/N]:`
 > 2. `OpenAI Codex CLI (Codex プロバイダ連携) もセットアップしますか？ [y/N]:`
 > 3. `GitHub CLI (gh / リポジトリ・PR連携) もセットアップしますか？ [y/N]:`
+> 4. `Claude Code (Google Vertex AI 連携) もセットアップしますか？ [y/N]:`
 > 
-> ここでスキップ（Enter）した場合でも、後からいつでも `t3-install-sdk`、`t3-install-codex`、`t3-install-gh` コマンドで個別にインストール可能です。
-> （環境変数 `INSTALL_ANDROID_SDK=1`、`INSTALL_CODEX=1`、`INSTALL_GH=1` を指定して非対話実行も可能）
+> ここでスキップ（Enter）した場合でも、後からいつでも `t3-install-sdk`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` コマンドで個別にインストール可能です。
+> （環境変数 `INSTALL_ANDROID_SDK=1`、`INSTALL_CODEX=1`、`INSTALL_GH=1`、`INSTALL_CLAUDE=1` を指定して非対話実行も可能）
 
 ---
 
@@ -203,8 +208,10 @@ t3-start
 | `t3-shell` | Ubuntu PRoot 環境の bash シェルに対話的にログイン |
 | `codex` | OpenAI Codex CLI（Termux から直接 `codex login` 等を実行可能） |
 | `gh` | GitHub CLI（Termux から直接 `gh auth login` 等を実行可能） |
+| `claude` | Claude Code CLI（Google Cloud Vertex AI 連携） |
 | `t3-install-codex` | OpenAI Codex CLI をセットアップ（後からいつでも追加可能） |
 | `t3-install-gh` | GitHub CLI をセットアップ（後からいつでも追加可能） |
+| `t3-install-claude` | Claude Code (Vertex AI) をセットアップ（後からいつでも追加可能） |
 | `t3-install-sdk` | Android SDK (APKビルド環境) をセットアップ（後からいつでも追加可能） |
 
 ---
@@ -279,6 +286,72 @@ gh auth login
 ```bash
 echo "ghp_your_token" | gh auth login --with-token
 ```
+
+---
+
+## オプション: Claude Code (Google Cloud Vertex AI 連携) のセットアップ
+
+Anthropic の公式コーディングエージェント **Claude Code (`@anthropic-ai/claude-code`)** を、Google Cloud の **Vertex AI (Agent Platform)** 経由で利用できるように環境を構成します。
+
+これにより、Anthropic との直接契約ではなく **Google Cloud の請求・IAM・ガバナンス基盤** を活用して Claude 3.7 / 3.5 モデル（Sonnet, Opus, Haiku）を利用可能になります。
+
+### インストール・セットアップ方法（いつでも実行可能）
+
+Termux または Ubuntu 内からワンコマンドでセットアップできます。
+
+- **Termux から実行する場合**:
+  ```bash
+  t3-install-claude
+  ```
+- **Ubuntu PRoot 内から実行する場合**:
+  ```bash
+  bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh
+  ```
+
+### セットアップの流れ（対話プロンプト）
+
+スクリプトを実行すると、以下の項目が対話形式で確認・設定されます:
+
+1. **Google Cloud プロジェクトIDの入力**:
+   - `gcloud` で既に設定されているプロジェクトがある場合はデフォルト値として提示されます。
+   - 使用したい GCP プロジェクトID を入力して Enter を押します。
+2. **Vertex AI リージョンの選択**:
+   - 推奨リージョン `us-east5`（Claude 3.7 / 3.5 モデルの主要提供地域）、`global`、`europe-west1` 等から選択（デフォルト: `us-east5`）。
+3. **API の自動有効化**:
+   - プロジェクトに対して `aiplatform.googleapis.com` (Vertex AI API) が自動有効化されます。
+4. **設定の自動保存**:
+   - `~/.claude/settings.json` の `env` ブロックおよび `/etc/profile.d/claude-vertex.sh` に環境変数が自動保存されます。
+
+### 前提条件と Google Cloud 側の準備
+
+Claude Code を Vertex AI 経由で使用するには、以下の Google Cloud 側の設定が必要です:
+
+1. **プロジェクトの請求 (Billing) 有効化**:
+   - 対象の GCP プロジェクトで有効な請求先アカウントが紐付いていること。
+2. **Vertex AI Model Garden での Claude モデル利用申請**:
+   - [Google Cloud Vertex AI Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) にアクセスし、「Claude」を検索して対象モデル（Claude 3.7 Sonnet 等）の「有効化 / アクセスリクエスト」を行ってください。
+3. **IAM 権限**:
+   - 操作するアカウントまたはサービスアカウントに **`roles/aiplatform.user`**（Vertex AI ユーザー）が付与されていること（`aiplatform.endpoints.predict` 権限）。
+4. **Google Cloud 認証 (ADC: Application Default Credentials)**:
+   - 以下のコマンドを実行して Google Cloud にログインします:
+     ```bash
+     gcloud auth application-default login --no-launch-browser
+     ```
+   - 表示された URL をブラウザで開き、取得した認証コードを貼り付けて承認します。
+
+### 起動と利用方法
+
+Termux または Ubuntu 内から直接 `claude` コマンドで起動できます。
+
+```bash
+# Claude Code の起動
+claude
+
+# 認証・接続状況の確認（Claude Code セッション内で実行）
+/status
+```
+
+`/status` を実行した際、`API provider` に **`Google Vertex AI`**、`GCP project` に指定したプロジェクトIDが表示されていればセットアップ成功です。
 
 ---
 
@@ -359,6 +432,7 @@ setting-up-antigravity-on-android/
     ├── install-codex.sh        # OpenAI Codex CLI セットアップ & T3 Code 有効化
     ├── codex_t3_bridge.py      # T3 Code ↔ Codex CLI 透過プロキシブリッジ (モデル名への残量動的付加)
     ├── install-gh.sh           # GitHub CLI (gh) セットアップ & Termux 連携
+    ├── setup-claude-vertex.sh  # Claude Code (Vertex AI) セットアップ & Termux 連携
     └── install-android-sdk.sh  # Android SDK (aapt2 ARM64対応) セットアップ
 ```
 
