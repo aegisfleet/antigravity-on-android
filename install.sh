@@ -158,8 +158,14 @@ if [ -f "$PID_FILE" ]; then
     if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
         echo "[*] T3 Code サーバーは既に起動しています (PID: $PID)"
         DEVICE_IP=$(get_ip)
-        echo "    端末内ブラウザ: http://127.0.0.1:3773"
-        [ -n "$DEVICE_IP" ] && echo "    外部ブラウザ:   http://${DEVICE_IP}:3773"
+        echo "    Web UI: http://127.0.0.1:3773"
+        [ -n "$DEVICE_IP" ] && echo "    外部接続: http://${DEVICE_IP}:3773"
+        TOKEN=$(tail -n 40 "$LOG_FILE" 2>/dev/null | grep "^Token:" | awk '{print $2}' || true)
+        if [ -n "$TOKEN" ]; then
+            echo "    PIN コード (Token): $TOKEN"
+            echo "    ペアリング URL:     http://127.0.0.1:3773/pair#token=$TOKEN"
+        fi
+        echo "    ※ QRコード・再ペアリングは 't3-pair' を実行してください。"
         exit 0
     fi
 fi
@@ -176,14 +182,39 @@ echo "[*] T3 Code サーバーを起動中..."
 nohup proot-distro login ubuntu -- bash -c "export IS_SANDBOX=1; exec /usr/local/bin/t3 serve --host 0.0.0.0" < /dev/null > "$LOG_FILE" 2>&1 &
 NEW_PID=$!
 echo "$NEW_PID" > "$PID_FILE"
-sleep 3
+
+# 起動とトークン出力を待機
+TOKEN=""
+for i in {1..8}; do
+    sleep 0.5
+    if [ -f "$LOG_FILE" ]; then
+        TOKEN=$(tail -n 40 "$LOG_FILE" 2>/dev/null | grep "^Token:" | awk '{print $2}' || true)
+        [ -n "$TOKEN" ] && break
+    fi
+done
 
 if kill -0 "$NEW_PID" 2>/dev/null; then
     echo "[✓] T3 Code サーバーが正常に起動しました (PID: $NEW_PID)"
     DEVICE_IP=$(get_ip)
-    echo "    端末内ブラウザ: http://127.0.0.1:3773"
-    [ -n "$DEVICE_IP" ] && echo "    外部ブラウザ:   http://${DEVICE_IP}:3773"
-    echo "    停止するには 't3-stop' を実行してください。"
+    echo ""
+    echo "============================================================"
+    echo "  🌐 Web ブラウザ接続先:"
+    echo "     端末内ブラウザ: http://127.0.0.1:3773"
+    [ -n "$DEVICE_IP" ] && echo "     外部ブラウザ:   http://${DEVICE_IP}:3773"
+    echo ""
+    if [ -n "$TOKEN" ]; then
+        echo "  🔑 T3 Code アプリ接続用 PIN コード (Token):"
+        echo "     $TOKEN"
+        echo ""
+        echo "  🔗 ペアリング URL (ブラウザで開いてワンタップ承認):"
+        echo "     http://127.0.0.1:3773/pair#token=$TOKEN"
+        [ -n "$DEVICE_IP" ] && echo "     http://${DEVICE_IP}:3773/pair#token=$TOKEN"
+        echo ""
+    fi
+    echo "  💡 QRコード表示・PIN再発行:   t3-pair"
+    echo "  💡 稼働確認・直近ログ確認:   t3-status"
+    echo "  💡 サーバー停止:             t3-stop"
+    echo "============================================================"
 else
     echo "[!] サーバーの起動に失敗しました。直近のログ:"
     tail -n 20 "$LOG_FILE" 2>/dev/null || true
@@ -226,6 +257,12 @@ if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; t
     echo "[✓] T3 Code サーバーは稼働中です (PID: $PID)"
     echo "    端末内ブラウザ: http://127.0.0.1:3773"
     [ -n "$DEVICE_IP" ] && echo "    外部ブラウザ:   http://${DEVICE_IP}:3773"
+    TOKEN=$(tail -n 40 "$LOG_FILE" 2>/dev/null | grep "^Token:" | awk '{print $2}' || true)
+    if [ -n "$TOKEN" ]; then
+        echo "    PIN コード (Token): $TOKEN"
+        echo "    ペアリング URL:     http://127.0.0.1:3773/pair#token=$TOKEN"
+    fi
+    echo "    ※ QRコード・再ペアリングは 't3-pair' を実行してください。"
     echo ""
     echo "--- 直近のログ (末尾 10 行) ---"
     tail -n 10 "$LOG_FILE" 2>/dev/null || true
@@ -239,6 +276,14 @@ else
 fi
 EOF
 chmod +x "${PREFIX_BIN}/t3-status"
+
+# t3-pair (アプリ接続用 PINコード / QRコード 生成)
+cat << 'EOF' > "${PREFIX_BIN}/t3-pair"
+#!/data/data/com.termux/files/usr/bin/bash
+echo "[*] T3 Code のペアリング情報 (PINコード / QRコード) を取得中..."
+proot-distro login ubuntu -- t3 pair "$@"
+EOF
+chmod +x "${PREFIX_BIN}/t3-pair"
 
 # t3-shell
 cat << 'EOF' > "${PREFIX_BIN}/t3-shell"
@@ -310,10 +355,10 @@ echo -e "${GREEN}===============================================================
 echo -e "${GREEN}  セットアップが完了しました！${NC}"
 echo -e "${GREEN}================================================================${NC}"
 echo ""
-echo -e "利用可能なコマンド:"
-echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (起動時に自動で最新版へ更新、http://127.0.0.1:3773)"
+echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (起動時に最新版へ自動更新、PINコード表示)"
+echo -e "  ${CYAN}t3-pair${NC}            : T3 Code アプリ接続用 PINコード・QRコードを表示・再発行"
 echo -e "  ${CYAN}t3-stop${NC}            : T3 Code サーバーを停止"
-echo -e "  ${CYAN}t3-status${NC}          : サーバーの稼働状態とログを確認"
+echo -e "  ${CYAN}t3-status${NC}          : サーバーの稼働状態と直近ログ・PINコードを確認"
 echo -e "  ${CYAN}t3-quota${NC}           : Antigravity の利用状況・残りクォータを確認"
 echo -e "  ${CYAN}t3-shell${NC}           : Ubuntu PRoot 環境のシェルにログイン"
 echo -e "  ${CYAN}codex${NC}              : OpenAI Codex CLI（'codex login' などを Termux から直接実行可能）"

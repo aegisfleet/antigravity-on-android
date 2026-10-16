@@ -33,11 +33,26 @@ start_server() {
     echo "$NEW_PID" > "$PID_FILE"
 
     # Wait briefly and verify
-    sleep 2
+    TOKEN=""
+    for i in {1..8}; do
+        sleep 0.5
+        if [ -f "$LOG_FILE" ]; then
+            TOKEN=$(tail -n 40 "$LOG_FILE" 2>/dev/null | grep "^Token:" | awk '{print $2}' || true)
+            [ -n "$TOKEN" ] && break
+        fi
+    done
+
     if kill -0 "$NEW_PID" 2>/dev/null; then
         echo "[✓] T3 Code サーバーが正常に起動しました (PID: $NEW_PID)"
         echo "    Web UI: http://127.0.0.1:3773"
         echo "    ログファイル: $LOG_FILE"
+        if [ -n "$TOKEN" ]; then
+            echo ""
+            echo "    🔑 アプリ接続用 PIN コード (Token): $TOKEN"
+            echo "    🔗 ペアリング URL: http://127.0.0.1:3773/pair#token=$TOKEN"
+        fi
+        echo ""
+        echo "    ※ QRコード・再ペアリングは 't3 pair' を実行してください。"
     else
         echo "[!] サーバーの起動に失敗しました。直近のログ:"
         tail -n 20 "$LOG_FILE"
@@ -73,6 +88,12 @@ status_server() {
         if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
             echo "[✓] T3 Code サーバーは稼働中です (PID: $PID)"
             echo "    アドレス: http://127.0.0.1:3773"
+            TOKEN=$(tail -n 40 "$LOG_FILE" 2>/dev/null | grep "^Token:" | awk '{print $2}' || true)
+            if [ -n "$TOKEN" ]; then
+                echo "    PIN コード (Token): $TOKEN"
+                echo "    ペアリング URL:     http://127.0.0.1:3773/pair#token=$TOKEN"
+            fi
+            echo "    ※ QRコード・再ペアリングは 't3 pair' を実行してください。"
             echo ""
             echo "--- 直近のログ (末尾 10 行) ---"
             tail -n 10 "$LOG_FILE" 2>/dev/null || true
