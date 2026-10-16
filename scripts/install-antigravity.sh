@@ -46,12 +46,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ACP_PY="${RUNTIME_BIN_DIR}/agy_acp_bridge.py"
 
 if [ -f "${SCRIPT_DIR}/agy_acp_bridge.py" ]; then
-    cp -f "${SCRIPT_DIR}/agy_acp_bridge.py" "$ACP_PY"
+    ln -sf "${SCRIPT_DIR}/agy_acp_bridge.py" "$ACP_PY"
 else
     echo "[Antigravity] agy_acp_bridge.py を GitHub から取得中..."
     curl -fsSL https://raw.githubusercontent.com/aegisfleet/setting-up-antigravity-on-android/main/scripts/agy_acp_bridge.py -o "$ACP_PY"
+    chmod +x "$ACP_PY"
 fi
-chmod +x "$ACP_PY"
 
 # 5. Create Smart Wrapper for agy_acp_server.par
 # T3 Code は PATH 上の "agy_acp_server.par" と同じディレクトリにある "localharness_external" を探索する

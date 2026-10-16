@@ -190,23 +190,33 @@ def fetch_quota_summary():
         "Content-Type": "application/json",
         "User-Agent": "Antigravity-CLI"
     }
-    url = "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
-    req = urllib.request.Request(url, data=b"{}", headers=headers, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            cached_quota_summary = data
-            cached_quota_time = time.time()
-            try:
-                os.makedirs(os.path.dirname(QUOTA_CACHE_FILE), exist_ok=True)
-                with open(QUOTA_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump({"timestamp": cached_quota_time, "data": data}, f)
-            except Exception:
-                pass
-            return data
-    except Exception as e:
-        log_debug(f"Error fetching quota summary: {e}")
-        return {"error": str(e)}
+    endpoints = [
+        "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
+        "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+    ]
+    last_err = None
+    for url in endpoints:
+        req = urllib.request.Request(url, data=b"{}", headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data and "groups" in data and len(data["groups"]) > 0:
+                    cached_quota_summary = data
+                    cached_quota_time = time.time()
+                    try:
+                        os.makedirs(os.path.dirname(QUOTA_CACHE_FILE), exist_ok=True)
+                        with open(QUOTA_CACHE_FILE, "w", encoding="utf-8") as f:
+                            json.dump({"timestamp": cached_quota_time, "data": data}, f)
+                    except Exception:
+                        pass
+                    return data
+                if data and not last_err:
+                    last_err = data
+        except Exception as e:
+            log_debug(f"Error fetching quota summary from {url}: {e}")
+            last_err = {"error": str(e)}
+
+    return last_err or {"error": "Failed to fetch quota summary"}
 
 def get_quota_summary(force_refresh=False):
     global cached_quota_summary, cached_quota_time
@@ -267,10 +277,22 @@ def get_quota_short_map():
         dname = g.get("displayName", "").lower()
         key = "gemini" if "gemini" in dname else ("claude" if "claude" in dname else "other")
         b_5h = None
+        b_week = None
         for b in g.get("buckets", []):
-            if b.get("window") == "5h":
-                b_5h = int(round(b.get("remainingFraction", 1.0) * 100))
+            w = b.get("window", "")
+            pct = int(round(b.get("remainingFraction", 1.0) * 100))
+            if w == "5h":
+                b_5h = pct
+            elif w == "weekly":
+                b_week = pct
+        parts = []
         if b_5h is not None:
+            parts.append(f"5h:{b_5h}%")
+        if b_week is not None:
+            parts.append(f"週:{b_week}%")
+        if parts:
+            res[key] = " ".join(parts)
+        elif b_5h is not None:
             res[key] = f"残{b_5h}%"
     return res
 
@@ -282,7 +304,7 @@ def format_model_label_with_quota(model_id, base_name, qmap):
     elif ("claude" in mid_lower or "gpt" in mid_lower) and "claude" in qmap:
         tag = qmap["claude"]
     if tag:
-        clean_base = re.sub(r'\s*\[残\d+%\]', '', base_name)
+        clean_base = re.sub(r'\s*\[[^\]]+\]', '', base_name).strip()
         return f"{clean_base} [{tag}]"
     return base_name
 

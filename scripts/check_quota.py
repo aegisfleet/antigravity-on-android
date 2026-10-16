@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 
 # Antigravity settings
 AGY_TOKEN_FILE = "/root/.gemini/antigravity-cli/antigravity-oauth-token"
-AGY_QUOTA_URL = "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+AGY_QUOTA_URL = "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+AGY_QUOTA_FALLBACK_URL = "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
 
 # Codex settings
 CODEX_HOME = os.environ.get("CODEX_HOME", os.path.expanduser("~/.codex"))
@@ -38,14 +39,23 @@ def get_antigravity_quota_summary():
         "Content-Type": "application/json",
         "User-Agent": "Antigravity-CLI"
     }
-    req = urllib.request.Request(AGY_QUOTA_URL, data=b"{}", headers=headers, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        return {"error": f"HTTP {e.code}: {e.reason}"}
-    except Exception as e:
-        return {"error": str(e)}
+
+    last_err = None
+    for url in (AGY_QUOTA_URL, AGY_QUOTA_FALLBACK_URL):
+        req = urllib.request.Request(url, data=b"{}", headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data and "groups" in data and len(data["groups"]) > 0:
+                    return data
+                if data and not last_err:
+                    last_err = data
+        except urllib.error.HTTPError as e:
+            last_err = {"error": f"HTTP {e.code}: {e.reason}"}
+        except Exception as e:
+            last_err = {"error": str(e)}
+
+    return last_err or {"error": "Failed to fetch quota summary"}
 
 def get_codex_quota_summary(timeout=7):
     """

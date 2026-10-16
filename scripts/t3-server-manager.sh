@@ -21,6 +21,9 @@ start_server() {
         rm -f "$PID_FILE"
     fi
 
+    echo "[*] T3 Code の最新アップデートを確認中 (t3 update)..."
+    t3 update -y 2>&1 || true
+
     echo "[*] T3 Code サーバーを起動中..."
     export PATH="/usr/local/bin:$PATH"
     

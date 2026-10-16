@@ -169,6 +169,9 @@ pkill -f "proot-distro.*t3 serve" 2>/dev/null || true
 pkill -f "t3 serve" 2>/dev/null || true
 sleep 1
 
+echo "[*] T3 Code の最新アップデートを確認中 (t3 update)..."
+proot-distro login ubuntu -- bash -c "t3 update -y" || true
+
 echo "[*] T3 Code サーバーを起動中..."
 nohup proot-distro login ubuntu -- bash -c "export IS_SANDBOX=1; exec /usr/local/bin/t3 serve --host 0.0.0.0" < /dev/null > "$LOG_FILE" 2>&1 &
 NEW_PID=$!
@@ -308,7 +311,7 @@ echo -e "${GREEN}  セットアップが完了しました！${NC}"
 echo -e "${GREEN}================================================================${NC}"
 echo ""
 echo -e "利用可能なコマンド:"
-echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (http://127.0.0.1:3773)"
+echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (起動時に自動で最新版へ更新、http://127.0.0.1:3773)"
 echo -e "  ${CYAN}t3-stop${NC}            : T3 Code サーバーを停止"
 echo -e "  ${CYAN}t3-status${NC}          : サーバーの稼働状態とログを確認"
 echo -e "  ${CYAN}t3-quota${NC}           : Antigravity の利用状況・残りクォータを確認"
