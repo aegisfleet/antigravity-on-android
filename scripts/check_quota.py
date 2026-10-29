@@ -37,7 +37,9 @@ def get_antigravity_quota_summary():
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
-        "User-Agent": "Antigravity-CLI"
+        # Google returns only the Claude/GPT bucket to the legacy CLI identity.
+        # The ACP client identity receives Gemini and Gemini 4 Argon buckets too.
+        "User-Agent": "antigravity/acp/1.3.0"
     }
 
     last_err = None
@@ -338,7 +340,15 @@ def get_quota_map_short(data):
         return res
     for g in data.get("groups", []):
         dname = g.get("displayName", "").lower()
-        key = "gemini" if "gemini" in dname else ("claude" if "claude" in dname else "other")
+        bucket_ids = [b.get("bucketId", "").lower() for b in g.get("buckets", [])]
+        if "argon" in dname or any("gemini-argon" in bucket_id for bucket_id in bucket_ids):
+            key = "gemini_argon"
+        elif "gemini" in dname or any(bucket_id.startswith("gemini-") for bucket_id in bucket_ids):
+            key = "gemini"
+        elif "claude" in dname or "gpt" in dname:
+            key = "claude"
+        else:
+            key = "other"
         b_5h = None
         b_week = None
         for b in g.get("buckets", []):

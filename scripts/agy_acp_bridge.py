@@ -188,7 +188,9 @@ def fetch_quota_summary():
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
-        "User-Agent": "Antigravity-CLI"
+        # Google returns only the Claude/GPT bucket to the legacy CLI identity.
+        # The ACP client identity receives Gemini and Gemini 4 Argon buckets too.
+        "User-Agent": "antigravity/acp/1.3.0"
     }
     endpoints = [
         "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
@@ -275,7 +277,15 @@ def get_quota_short_map():
         return res
     for g in data.get("groups", []):
         dname = g.get("displayName", "").lower()
-        key = "gemini" if "gemini" in dname else ("claude" if "claude" in dname else "other")
+        bucket_ids = [b.get("bucketId", "").lower() for b in g.get("buckets", [])]
+        if "argon" in dname or any("gemini-argon" in bucket_id for bucket_id in bucket_ids):
+            key = "gemini_argon"
+        elif "gemini" in dname or any(bucket_id.startswith("gemini-") for bucket_id in bucket_ids):
+            key = "gemini"
+        elif "claude" in dname or "gpt" in dname:
+            key = "claude"
+        else:
+            key = "other"
         b_5h = None
         b_week = None
         for b in g.get("buckets", []):
@@ -299,7 +309,9 @@ def get_quota_short_map():
 def format_model_label_with_quota(model_id, base_name, qmap):
     mid_lower = model_id.lower()
     tag = None
-    if "gemini" in mid_lower and "gemini" in qmap:
+    if "gemini" in mid_lower and "argon" in mid_lower and "gemini_argon" in qmap:
+        tag = qmap["gemini_argon"]
+    elif "gemini" in mid_lower and "gemini" in qmap:
         tag = qmap["gemini"]
     elif ("claude" in mid_lower or "gpt" in mid_lower) and "claude" in qmap:
         tag = qmap["claude"]
