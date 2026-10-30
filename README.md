@@ -116,7 +116,7 @@ Termux を開き、以下のコマンドを貼り付けて実行します。
 
 ```bash
 pkg update -y && pkg install -y curl
-curl -fsSL "https://raw.githubusercontent.com/aegisfleet/setting-up-antigravity-on-android/main/install.sh?v=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/main/install.sh?v=$(date +%s)" | bash
 ```
 
 > **対話プロンプトについて**:
@@ -274,7 +274,7 @@ Termux または Ubuntu 内からワンコマンドでセットアップでき�
   ```
 - **Ubuntu PRoot 内から実行する場合**:
   ```bash
-  bash /root/setting-up-antigravity-on-android/scripts/install-codex.sh
+  bash /root/antigravity-on-android/scripts/install-codex.sh
   ```
 
 ### アカウント認証（ログイン）
@@ -308,7 +308,7 @@ GitHub 公式の **GitHub CLI (`gh`)** を導入し、端末内からリポジ�
   ```
 - **Ubuntu PRoot 内から実行する場合**:
   ```bash
-  bash /root/setting-up-antigravity-on-android/scripts/install-gh.sh
+  bash /root/antigravity-on-android/scripts/install-gh.sh
   ```
 
 ### アカウント認証（ログイン）
@@ -349,7 +349,7 @@ Termux または Ubuntu 内からワンコマンドでセットアップでき�
   ```
 - **Ubuntu PRoot 内から実行する場合**:
   ```bash
-  bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh
+  bash /root/antigravity-on-android/scripts/setup-claude-vertex.sh
   ```
 
 ### セットアップの流れ（対話プロンプト）
@@ -476,7 +476,7 @@ flowchart TD
 ### ファイル構成
 
 ```
-setting-up-antigravity-on-android/
+antigravity-on-android/
 ├── install.sh                  # Termux ホスト側エントリーポイント
 └── scripts/
     ├── setup-ubuntu.sh         # Ubuntu PRoot 環境の初期構築

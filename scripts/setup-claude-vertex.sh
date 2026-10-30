@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Claude Code Setup Script for Google Cloud Vertex AI
 # ==============================================================================
 set -euo pipefail
@@ -273,7 +273,7 @@ PREFIX_BIN="/data/data/com.termux/files/usr/bin"
 if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
     cat << 'EOF' > "${PREFIX_BIN}/t3-install-claude"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/setup-claude-vertex.sh
 EOF
     chmod +x "${PREFIX_BIN}/t3-install-claude"
 
@@ -337,5 +337,5 @@ echo -e "  - 単体 CLI 起動 : ${CYAN}claude${NC}"
 echo -e "  - 状態確認      : 起動後に ${CYAN}/status${NC} を入力"
 echo -e "  - T3 Code 連携  : ${CYAN}t3-stop && t3-start${NC} で T3 Code サーバーを再起動すると、"
 echo -e "                    Web 画面 (http://127.0.0.1:3773) のモデル選択に Claude が有効化されます。"
-echo -e "  - 設定再実行    : ${CYAN}t3-install-claude${NC} または ${CYAN}bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh${NC}"
+echo -e "  - 設定再実行    : ${CYAN}t3-install-claude${NC} または ${CYAN}bash /root/antigravity-on-android/scripts/setup-claude-vertex.sh${NC}"
 echo ""

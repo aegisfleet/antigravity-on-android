@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Ubuntu Environment Setup Script (Runs inside PRoot)
 # ==============================================================================
 set -euo pipefail

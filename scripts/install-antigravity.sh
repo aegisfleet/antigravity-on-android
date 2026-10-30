@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Antigravity Provider Setup for T3 Code (PRoot Ubuntu ARM64)
 # ==============================================================================
 set -euo pipefail
@@ -49,7 +49,7 @@ if [ -f "${SCRIPT_DIR}/agy_acp_bridge.py" ]; then
     ln -sf "${SCRIPT_DIR}/agy_acp_bridge.py" "$ACP_PY"
 else
     echo "[Antigravity] agy_acp_bridge.py を GitHub から取得中..."
-    curl -fsSL https://raw.githubusercontent.com/aegisfleet/setting-up-antigravity-on-android/main/scripts/agy_acp_bridge.py -o "$ACP_PY"
+    curl -fsSL https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/main/scripts/agy_acp_bridge.py -o "$ACP_PY"
     chmod +x "$ACP_PY"
 fi
 
@@ -81,7 +81,7 @@ QUOTA_PY="${RUNTIME_BIN_DIR}/check_quota.py"
 if [ -f "${SCRIPT_DIR}/check_quota.py" ]; then
     cp -f "${SCRIPT_DIR}/check_quota.py" "$QUOTA_PY"
 else
-    curl -fsSL https://raw.githubusercontent.com/aegisfleet/setting-up-antigravity-on-android/main/scripts/check_quota.py -o "$QUOTA_PY"
+    curl -fsSL https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/main/scripts/check_quota.py -o "$QUOTA_PY"
 fi
 chmod +x "$QUOTA_PY"
 

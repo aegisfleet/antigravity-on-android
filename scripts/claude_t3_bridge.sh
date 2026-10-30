@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Claude Code Bridge for T3 Code (PRoot Ubuntu ARM64)
 # ==============================================================================
 set -e

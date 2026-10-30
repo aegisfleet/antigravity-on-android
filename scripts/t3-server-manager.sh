@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # T3 Code Server Process Manager for PRoot
 # ==============================================================================
 set -euo pipefail

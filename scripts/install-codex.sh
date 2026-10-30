@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # OpenAI Codex CLI Setup Script for T3 Code (PRoot Ubuntu ARM64)
 # ==============================================================================
 set -euo pipefail
@@ -85,7 +85,7 @@ if [ -f "$BRIDGE_SRC" ]; then
     cat << 'EOF' > /usr/local/bin/codex-t3-bridge
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 -u /root/setting-up-antigravity-on-android/scripts/codex_t3_bridge.py "$@"
+exec python3 -u /root/antigravity-on-android/scripts/codex_t3_bridge.py "$@"
 EOF
     chmod +x /usr/local/bin/codex-t3-bridge
     echo "[Codex] T3 Code 連携ブリッジを配置しました: /usr/local/bin/codex-t3-bridge"
@@ -147,7 +147,7 @@ if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
     # t3-install-codex
     cat << 'EOF' > "${PREFIX_BIN}/t3-install-codex"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/install-codex.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-codex.sh
 EOF
     chmod +x "${PREFIX_BIN}/t3-install-codex"
 

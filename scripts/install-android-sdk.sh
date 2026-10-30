@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Android SDK Setup Script for Linux ARM64 (PRoot Ubuntu)
 # ==============================================================================
 set -euo pipefail

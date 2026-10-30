@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# setting-up-antigravity-on-android
+# antigravity-on-android
 # Termux entrypoint installer
 # ==============================================================================
 set -euo pipefail
@@ -128,15 +128,15 @@ proot-distro login ubuntu -- /bin/bash -c "
     apt-get update -y
     apt-get install -y --no-install-recommends ca-certificates git curl
 
-    rm -rf /root/setting-up-antigravity-on-android
+    rm -rf /root/antigravity-on-android
     echo '[Ubuntu] リポジトリをクローン中...'
-    git clone https://github.com/aegisfleet/setting-up-antigravity-on-android.git /root/setting-up-antigravity-on-android
+    git clone https://github.com/aegisfleet/antigravity-on-android.git /root/antigravity-on-android
 
     export INSTALL_ANDROID_SDK=\"$INSTALL_ANDROID_SDK\"
     export INSTALL_CODEX=\"$INSTALL_CODEX\"
     export INSTALL_GH=\"$INSTALL_GH\"
     export INSTALL_CLAUDE=\"$INSTALL_CLAUDE\"
-    bash /root/setting-up-antigravity-on-android/scripts/setup-ubuntu.sh
+    bash /root/antigravity-on-android/scripts/setup-ubuntu.sh
 " < /dev/null
 
 # 6. Create launcher commands in Termux
@@ -295,7 +295,7 @@ chmod +x "${PREFIX_BIN}/t3-shell"
 # t3-quota (日本語コマンド「使用量」「使用状況」も作成)
 cat << 'EOF' > "${PREFIX_BIN}/t3-quota"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash -c "python3 /root/setting-up-antigravity-on-android/scripts/check_quota.py"
+proot-distro login ubuntu -- bash -c "python3 /root/antigravity-on-android/scripts/check_quota.py"
 EOF
 chmod +x "${PREFIX_BIN}/t3-quota"
 ln -sf "${PREFIX_BIN}/t3-quota" "${PREFIX_BIN}/使用量"
@@ -304,7 +304,7 @@ ln -sf "${PREFIX_BIN}/t3-quota" "${PREFIX_BIN}/使用状況"
 # t3-install-codex
 cat << 'EOF' > "${PREFIX_BIN}/t3-install-codex"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/install-codex.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-codex.sh
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-codex"
 
@@ -318,7 +318,7 @@ chmod +x "${PREFIX_BIN}/codex"
 # t3-install-gh
 cat << 'EOF' > "${PREFIX_BIN}/t3-install-gh"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/install-gh.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-gh.sh
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-gh"
 
@@ -332,14 +332,14 @@ chmod +x "${PREFIX_BIN}/gh"
 # t3-install-sdk
 cat << 'EOF' > "${PREFIX_BIN}/t3-install-sdk"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/install-android-sdk.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-android-sdk.sh
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-sdk"
 
 # t3-install-claude
 cat << 'EOF' > "${PREFIX_BIN}/t3-install-claude"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/setting-up-antigravity-on-android/scripts/setup-claude-vertex.sh
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/setup-claude-vertex.sh
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-claude"
 
