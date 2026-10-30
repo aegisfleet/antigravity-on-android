@@ -97,4 +97,18 @@ export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-
 EOF
 fi
 
+# 8. Ubuntu PRoot 内のショートカット & Termux ランチャーの更新
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+mkdir -p /usr/local/bin
+ln -sf "${SCRIPT_DIR}/install-android-sdk.sh" /usr/local/bin/t3-install-sdk 2>/dev/null || true
+
+PREFIX_BIN="/data/data/com.termux/files/usr/bin"
+if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
+    cat << EOF > "${PREFIX_BIN}/t3-install-sdk"
+#!/data/data/com.termux/files/usr/bin/bash
+proot-distro login ubuntu -- bash "${SCRIPT_DIR}/install-android-sdk.sh"
+EOF
+    chmod +x "${PREFIX_BIN}/t3-install-sdk"
+fi
+
 echo "[Android SDK] セットアップが完了しました。"

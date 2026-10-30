@@ -261,7 +261,7 @@ fi
 
 # PRoot Ubuntu 内のコマンドリンク
 mkdir -p /usr/local/bin
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2>/dev/null || true
 if [ -f "${SCRIPT_DIR}/claude_t3_bridge.sh" ]; then
     chmod +x "${SCRIPT_DIR}/claude_t3_bridge.sh"
@@ -271,9 +271,9 @@ fi
 # Termux コマンドの作成 (Termux 環境が存在する場合)
 PREFIX_BIN="/data/data/com.termux/files/usr/bin"
 if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
-    cat << 'EOF' > "${PREFIX_BIN}/t3-install-claude"
+    cat << EOF > "${PREFIX_BIN}/t3-install-claude"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/setup-claude-vertex.sh
+proot-distro login ubuntu -- bash "${SCRIPT_DIR}/setup-claude-vertex.sh"
 EOF
     chmod +x "${PREFIX_BIN}/t3-install-claude"
 

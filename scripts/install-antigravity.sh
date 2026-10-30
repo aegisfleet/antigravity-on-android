@@ -32,20 +32,27 @@ if ! command -v agy >/dev/null 2>&1; then
     fi
 fi
 
-# 3. Create dummy xdg-open to safely intercept browser opening in PRoot
+# 3. Create xdg-open wrapper to safely bridge browser opening in PRoot
 XDG_OPEN_BIN="/usr/local/bin/xdg-open"
 cat << 'EOF' > "$XDG_OPEN_BIN"
 #!/usr/bin/env bash
-# Termux PRoot dummy xdg-open
-echo "Open the following link to authenticate the ACP server: $1" >&2
+# Termux PRoot xdg-open (Android 端末のブラウザ連携)
+URL="$1"
+if [ -x "/data/data/com.termux/files/usr/bin/termux-open-url" ]; then
+    /data/data/com.termux/files/usr/bin/termux-open-url "$URL" 2>/dev/null || true
+fi
+echo "" >&2
+echo "ブラウザで以下のURLを開いてください: $URL" >&2
+echo "" >&2
 EOF
 chmod +x "$XDG_OPEN_BIN"
 
 # 4. Install Antigravity ACP Python Bridge script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 ACP_PY="${RUNTIME_BIN_DIR}/agy_acp_bridge.py"
 
 if [ -f "${SCRIPT_DIR}/agy_acp_bridge.py" ]; then
+    chmod +x "${SCRIPT_DIR}/agy_acp_bridge.py"
     ln -sf "${SCRIPT_DIR}/agy_acp_bridge.py" "$ACP_PY"
 else
     echo "[Antigravity] agy_acp_bridge.py を GitHub から取得中..."
@@ -79,11 +86,12 @@ chmod +x "$HARNESS"
 # 7. Install check_quota.py and t3-quota
 QUOTA_PY="${RUNTIME_BIN_DIR}/check_quota.py"
 if [ -f "${SCRIPT_DIR}/check_quota.py" ]; then
-    cp -f "${SCRIPT_DIR}/check_quota.py" "$QUOTA_PY"
+    chmod +x "${SCRIPT_DIR}/check_quota.py"
+    ln -sf "${SCRIPT_DIR}/check_quota.py" "$QUOTA_PY"
 else
     curl -fsSL https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/main/scripts/check_quota.py -o "$QUOTA_PY"
+    chmod +x "$QUOTA_PY"
 fi
-chmod +x "$QUOTA_PY"
 
 cat << 'EOF' > /usr/local/bin/t3-quota
 #!/usr/bin/env bash

@@ -78,14 +78,14 @@ else
 fi
 
 # T3 Code 用の透過ブリッジ (/usr/local/bin/codex-t3-bridge) を設定
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+ln -sf "${SCRIPT_DIR}/install-codex.sh" /usr/local/bin/t3-install-codex 2>/dev/null || true
 BRIDGE_SRC="${SCRIPT_DIR}/codex_t3_bridge.py"
 if [ -f "$BRIDGE_SRC" ]; then
     chmod +x "$BRIDGE_SRC"
-    cat << 'EOF' > /usr/local/bin/codex-t3-bridge
+    cat << EOF > /usr/local/bin/codex-t3-bridge
 #!/usr/bin/env bash
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 -u /root/antigravity-on-android/scripts/codex_t3_bridge.py "$@"
+exec python3 -u "${BRIDGE_SRC}" "\$@"
 EOF
     chmod +x /usr/local/bin/codex-t3-bridge
     echo "[Codex] T3 Code 連携ブリッジを配置しました: /usr/local/bin/codex-t3-bridge"
@@ -145,9 +145,9 @@ EOF
 PREFIX_BIN="/data/data/com.termux/files/usr/bin"
 if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
     # t3-install-codex
-    cat << 'EOF' > "${PREFIX_BIN}/t3-install-codex"
+    cat << EOF > "${PREFIX_BIN}/t3-install-codex"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-codex.sh
+proot-distro login ubuntu -- bash "${SCRIPT_DIR}/install-codex.sh"
 EOF
     chmod +x "${PREFIX_BIN}/t3-install-codex"
 

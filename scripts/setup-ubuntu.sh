@@ -50,7 +50,7 @@ else
 fi
 
 # 4. Setup Antigravity
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 echo "[Ubuntu] 4/4 Antigravity のセットアップ中..."
 bash "${SCRIPT_DIR}/install-antigravity.sh"
 
@@ -85,6 +85,9 @@ fi
 # Shortcut symlinks
 mkdir -p /usr/local/bin
 ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2>/dev/null || true
+ln -sf "${SCRIPT_DIR}/install-codex.sh" /usr/local/bin/t3-install-codex 2>/dev/null || true
+ln -sf "${SCRIPT_DIR}/install-gh.sh" /usr/local/bin/t3-install-gh 2>/dev/null || true
+ln -sf "${SCRIPT_DIR}/install-android-sdk.sh" /usr/local/bin/t3-install-sdk 2>/dev/null || true
 
 # Ensure paths in /root/.bashrc
 if ! grep -q '/usr/local/bin' /root/.bashrc 2>/dev/null; then

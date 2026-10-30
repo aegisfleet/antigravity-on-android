@@ -58,15 +58,16 @@ EOF
 fi
 
 # 5. Ubuntu PRoot 内のショートカット作成
-ln -sf /root/antigravity-on-android/scripts/install-gh.sh /usr/local/bin/t3-install-gh
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+ln -sf "${SCRIPT_DIR}/install-gh.sh" /usr/local/bin/t3-install-gh
 
 # 6. Termux コマンドの作成 (Termux 環境が存在する場合)
 PREFIX_BIN="/data/data/com.termux/files/usr/bin"
 if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
     # t3-install-gh
-    cat << 'EOF' > "${PREFIX_BIN}/t3-install-gh"
+    cat << EOF > "${PREFIX_BIN}/t3-install-gh"
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-gh.sh
+proot-distro login ubuntu -- bash "${SCRIPT_DIR}/install-gh.sh"
 EOF
     chmod +x "${PREFIX_BIN}/t3-install-gh"
 
