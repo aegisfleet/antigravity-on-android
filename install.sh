@@ -86,6 +86,16 @@ if [ "$INSTALL_CLAUDE" -eq 0 ] && [ -t 0 ]; then
     esac
 fi
 
+INSTALL_OPENCODE="${INSTALL_OPENCODE:-0}"
+if [ "$INSTALL_OPENCODE" -eq 0 ] && [ -t 0 ]; then
+    echo -e "${YELLOW}OpenCode CLI とプライベート設定もセットアップしますか？ [y/N]: ${NC}"
+    read -r ans || ans="n"
+    case "$ans" in
+        [yY][eE][sS]|[yY]) INSTALL_OPENCODE=1 ;;
+        *) INSTALL_OPENCODE=0 ;;
+    esac
+fi
+
 # 3. Termux host dependencies
 echo -e "${BLUE}[1/4] Termux ホストのパッケージを更新・インストール中...${NC}"
 pkg update -y
@@ -136,6 +146,7 @@ proot-distro login ubuntu -- /bin/bash -c "
     export INSTALL_CODEX=\"$INSTALL_CODEX\"
     export INSTALL_GH=\"$INSTALL_GH\"
     export INSTALL_CLAUDE=\"$INSTALL_CLAUDE\"
+    export INSTALL_OPENCODE=\"$INSTALL_OPENCODE\"
     bash /root/antigravity-on-android/scripts/setup-ubuntu.sh
 " < /dev/null
 

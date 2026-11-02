@@ -51,6 +51,10 @@ Android 上の **Termux**（Google Play 版 / GitHub Releases 版 / F-Droid 版�
   - **トークン消費ゼロの即答ヘルプ**: `/help`、`/ヘルプ`、または「ヘルプ」「コマンド一覧」と送信するだけで、**推論トークンを消費することなく**（0 秒即答）利用可能な全コマンド・機能ガイドをグラフィカルに表示。
 - 🛠 **Android SDK ビルド環境（オプション）**:
   - ARM64 版 `aapt2` のパッチ適用済み。端末内での Gradle による APK ビルドが可能。
+- 🧩 **OpenCode CLI と個人設定（オプション）**:
+  - OpenCode v2 (`@opencode/cli`) を npm の最新版へ更新し、プライベートな `opencode-settings` リポジトリからグローバル設定を取得して適用。
+  - 設定ファイルはこのリポジトリには含めず、既存設定は日時付きバックアップを作成。
+  - セットアップには `opencode-settings` への Git 読み取りアクセスが必要です。
 - 🤖 **OpenAI Codex CLI 連携（オプション）**:
   - 公式 Codex CLI (`@openai/codex`) の ARM64 静的バイナリと T3 Code の `codex app-server` 連携をワンタッチ構築。
   - ChatGPT アカウントの OAuth デバイス認証 (`codex login`) または OpenAI API キーに対応。
@@ -125,9 +129,12 @@ curl -fsSL "https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/
 > 2. `OpenAI Codex CLI (Codex プロバイダ連携) もセットアップしますか？ [y/N]:`
 > 3. `GitHub CLI (gh / リポジトリ・PR連携) もセットアップしますか？ [y/N]:`
 > 4. `Claude Code (Google Vertex AI 連携) もセットアップしますか？ [y/N]:`
+> 5. `OpenCode CLI とプライベート設定もセットアップしますか？ [y/N]:`
+>
+> OpenCode を選択する場合、Ubuntu 環境の Git からプライベートな `aegisfleet/opencode-settings` を読める認証が必要です。後から更新する場合は Ubuntu 内で `t3-install-opencode` を実行します。
 > 
 > ここでスキップ（Enter）した場合でも、後からいつでも `t3-install-sdk`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` コマンドで個別にインストール可能です。
-> （環境変数 `INSTALL_ANDROID_SDK=1`、`INSTALL_CODEX=1`、`INSTALL_GH=1`、`INSTALL_CLAUDE=1` を指定して非対話実行も可能）
+> （環境変数 `INSTALL_ANDROID_SDK=1`、`INSTALL_CODEX=1`、`INSTALL_GH=1`、`INSTALL_CLAUDE=1`、`INSTALL_OPENCODE=1` を指定して非対話実行も可能）
 
 ---
 
@@ -480,6 +487,7 @@ antigravity-on-android/
 ├── install.sh                  # Termux ホスト側エントリーポイント
 └── scripts/
     ├── setup-ubuntu.sh         # Ubuntu PRoot 環境の初期構築
+    ├── install-opencode.sh     # OpenCode CLI 更新 & プライベート設定の取得・適用
     ├── install-antigravity.sh  # Antigravity プロバイダ構成 & ブリッジ登録
     ├── agy_acp_bridge.py       # T3 Code ACP ↔ agy CLI Python ブリッジ (会話永続化/ストリーミング/クォータ管理)
     ├── check_quota.py          # Antigravity & Codex 利用状況・レート制限チェッカー
@@ -547,4 +555,3 @@ exit
 ## ライセンス
 
 [MIT License](LICENSE)
-

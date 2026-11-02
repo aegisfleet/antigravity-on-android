@@ -54,28 +54,35 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 echo "[Ubuntu] 4/4 Antigravity のセットアップ中..."
 bash "${SCRIPT_DIR}/install-antigravity.sh"
 
-# 5. Optional: Android SDK
+# 5. Optional: OpenCode CLI and private global settings
+INSTALL_OPENCODE="${INSTALL_OPENCODE:-0}"
+if [ "$INSTALL_OPENCODE" -eq 1 ]; then
+    echo "[Ubuntu] OpenCode CLI と個人設定をセットアップ中..."
+    bash "${SCRIPT_DIR}/install-opencode.sh"
+fi
+
+# 6. Optional: Android SDK
 INSTALL_ANDROID_SDK="${INSTALL_ANDROID_SDK:-0}"
 if [ "$INSTALL_ANDROID_SDK" -eq 1 ]; then
     echo "[Ubuntu] オプション: Android SDK ビルド環境をセットアップ中..."
     bash "${SCRIPT_DIR}/install-android-sdk.sh"
 fi
 
-# 6. Optional: OpenAI Codex CLI
+# 7. Optional: OpenAI Codex CLI
 INSTALL_CODEX="${INSTALL_CODEX:-0}"
 if [ "$INSTALL_CODEX" -eq 1 ]; then
     echo "[Ubuntu] オプション: OpenAI Codex CLI をセットアップ中..."
     bash "${SCRIPT_DIR}/install-codex.sh"
 fi
 
-# 7. Optional: GitHub CLI (gh)
+# 8. Optional: GitHub CLI (gh)
 INSTALL_GH="${INSTALL_GH:-0}"
 if [ "$INSTALL_GH" -eq 1 ]; then
     echo "[Ubuntu] オプション: GitHub CLI (gh) をセットアップ中..."
     bash "${SCRIPT_DIR}/install-gh.sh"
 fi
 
-# 8. Optional: Claude Code on Vertex AI
+# 9. Optional: Claude Code on Vertex AI
 INSTALL_CLAUDE="${INSTALL_CLAUDE:-0}"
 if [ "$INSTALL_CLAUDE" -eq 1 ]; then
     echo "[Ubuntu] オプション: Claude Code (Vertex AI) をセットアップ中..."
@@ -88,6 +95,7 @@ ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2
 ln -sf "${SCRIPT_DIR}/install-codex.sh" /usr/local/bin/t3-install-codex 2>/dev/null || true
 ln -sf "${SCRIPT_DIR}/install-gh.sh" /usr/local/bin/t3-install-gh 2>/dev/null || true
 ln -sf "${SCRIPT_DIR}/install-android-sdk.sh" /usr/local/bin/t3-install-sdk 2>/dev/null || true
+ln -sf "${SCRIPT_DIR}/install-opencode.sh" /usr/local/bin/t3-install-opencode 2>/dev/null || true
 
 # Ensure paths in /root/.bashrc
 if ! grep -q '/usr/local/bin' /root/.bashrc 2>/dev/null; then
