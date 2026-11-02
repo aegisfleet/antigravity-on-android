@@ -354,6 +354,13 @@ proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/setup-cla
 EOF
 chmod +x "${PREFIX_BIN}/t3-install-claude"
 
+# t3-install-opencode
+cat << 'EOF' > "${PREFIX_BIN}/t3-install-opencode"
+#!/data/data/com.termux/files/usr/bin/bash
+proot-distro login ubuntu -- bash /root/antigravity-on-android/scripts/install-opencode.sh
+EOF
+chmod +x "${PREFIX_BIN}/t3-install-opencode"
+
 # claude (Termux から直接 claude コマンドを実行)
 cat << 'EOF' > "${PREFIX_BIN}/claude"
 #!/data/data/com.termux/files/usr/bin/bash
@@ -378,6 +385,7 @@ echo -e "  ${CYAN}claude${NC}             : Claude Code CLI (Google Cloud Vertex
 echo -e "  ${CYAN}t3-install-codex${NC}   : OpenAI Codex CLI のセットアップ（後からいつでも実行可能）"
 echo -e "  ${CYAN}t3-install-gh${NC}      : GitHub CLI のセットアップ（後からいつでも実行可能）"
 echo -e "  ${CYAN}t3-install-claude${NC}  : Claude Code (Vertex AI) のセットアップ（後からいつでも実行可能）"
+echo -e "  ${CYAN}t3-install-opencode${NC}: OpenCode v2 と T3 Code 連携・完了通知のセットアップ"
 echo -e "  ${CYAN}t3-install-sdk${NC}     : Android SDK (APKビルド環境) のセットアップ（後からいつでも実行可能）"
 echo ""
 echo -e "${YELLOW}💡 【初回のみ】Antigravity の Google アカウント認証を行ってください:${NC}"

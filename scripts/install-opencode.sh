@@ -20,7 +20,14 @@ echo "[OpenCode] 最新版をインストール中..."
 if npm list --global opencode-ai --depth=0 >/dev/null 2>&1; then
     npm uninstall --global opencode-ai
 fi
-npm install --global @opencode/cli@latest
+npm_root="$(npm root --global)"
+installed_version="$(node -e 'try { console.log(require(process.argv[1]).version) } catch {}' "${npm_root}/@opencode/cli/package.json")"
+latest_version="$(npm view @opencode/cli version)"
+if [ "$installed_version" != "$latest_version" ]; then
+    npm install --global @opencode/cli@latest
+else
+    echo "[OpenCode] 最新版です (@opencode/cli ${installed_version})。更新をスキップします。"
+fi
 
 echo "[OpenCode] プライベート設定リポジトリを同期中..."
 mkdir -p "$(dirname "$SETTINGS_DIR")"
@@ -54,6 +61,34 @@ if [ -e "$CONFIG_FILE" ] || [ -L "$CONFIG_FILE" ]; then
     echo "[OpenCode] 既存設定をバックアップしました: $backup"
 fi
 install -m 600 "$source_config" "$CONFIG_FILE"
+
+echo "[OpenCode] Termux 完了通知プラグインをセットアップ中..."
+mkdir -p "${CONFIG_DIR}/plugins"
+install -m 644 "$(dirname "${BASH_SOURCE[0]}")/opencode-termux-notification.js" \
+    "${CONFIG_DIR}/plugins/termux-notification.js"
+
+echo "[OpenCode] T3 Code の OpenCode プロバイダーを有効化中..."
+python3 - <<'PY'
+import json
+import os
+
+path = "/root/.t3/userdata/settings.json"
+data = {}
+if os.path.isfile(path):
+    with open(path, "r", encoding="utf-8") as stream:
+        data = json.load(stream)
+
+instances = data.setdefault("providerInstances", {})
+instance = instances.setdefault("opencode", {})
+instance["driver"] = "opencode"
+instance["enabled"] = True
+config = instance.setdefault("config", {})
+config["binaryPath"] = "/usr/bin/opencode"
+
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w", encoding="utf-8") as stream:
+    json.dump(data, stream, indent=2, ensure_ascii=False)
+PY
 
 echo "[OpenCode] 設定を適用しました: $CONFIG_FILE"
 opencode --version

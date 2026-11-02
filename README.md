@@ -53,6 +53,7 @@ Android 上の **Termux**（Google Play 版 / GitHub Releases 版 / F-Droid 版�
   - ARM64 版 `aapt2` のパッチ適用済み。端末内での Gradle による APK ビルドが可能。
 - 🧩 **OpenCode CLI と個人設定（オプション）**:
   - OpenCode v2 (`@opencode/cli`) を npm の最新版へ更新し、プライベートな `opencode-settings` リポジトリからグローバル設定を取得して適用。
+  - T3 Code のOpenCodeプロバイダーを有効化し、作業終了時にTermux:API経由でAndroid通知を送信。
   - 設定ファイルはこのリポジトリには含めず、既存設定は日時付きバックアップを作成。
   - セットアップには `opencode-settings` への Git 読み取りアクセスが必要です。
 - 🤖 **OpenAI Codex CLI 連携（オプション）**:
@@ -131,9 +132,9 @@ curl -fsSL "https://raw.githubusercontent.com/aegisfleet/antigravity-on-android/
 > 4. `Claude Code (Google Vertex AI 連携) もセットアップしますか？ [y/N]:`
 > 5. `OpenCode CLI とプライベート設定もセットアップしますか？ [y/N]:`
 >
-> OpenCode を選択する場合、Ubuntu 環境の Git からプライベートな `aegisfleet/opencode-settings` を読める認証が必要です。後から更新する場合は Ubuntu 内で `t3-install-opencode` を実行します。
+> OpenCode を選択する場合、Ubuntu 環境の Git からプライベートな `aegisfleet/opencode-settings` を読める認証が必要です。通知にはTermux:APIアプリが必要です。後から更新する場合はTermuxで `t3-install-opencode` を実行します。
 > 
-> ここでスキップ（Enter）した場合でも、後からいつでも `t3-install-sdk`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` コマンドで個別にインストール可能です。
+> ここでスキップ（Enter）した場合でも、後からいつでも `t3-install-sdk`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude`、`t3-install-opencode` コマンドで個別にインストール可能です。
 > （環境変数 `INSTALL_ANDROID_SDK=1`、`INSTALL_CODEX=1`、`INSTALL_GH=1`、`INSTALL_CLAUDE=1`、`INSTALL_OPENCODE=1` を指定して非対話実行も可能）
 
 ---
@@ -488,6 +489,7 @@ antigravity-on-android/
 └── scripts/
     ├── setup-ubuntu.sh         # Ubuntu PRoot 環境の初期構築
     ├── install-opencode.sh     # OpenCode CLI 更新 & プライベート設定の取得・適用
+    ├── opencode-termux-notification.js # OpenCode 完了時のTermux通知プラグイン
     ├── install-antigravity.sh  # Antigravity プロバイダ構成 & ブリッジ登録
     ├── agy_acp_bridge.py       # T3 Code ACP ↔ agy CLI Python ブリッジ (会話永続化/ストリーミング/クォータ管理)
     ├── check_quota.py          # Antigravity & Codex 利用状況・レート制限チェッカー
