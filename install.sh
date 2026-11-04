@@ -159,6 +159,26 @@ cat << 'EOF' > "${PREFIX_BIN}/t3-start"
 #!/data/data/com.termux/files/usr/bin/bash
 PID_FILE="$HOME/.t3-server.pid"
 LOG_FILE="$HOME/.t3-server.log"
+UPDATE_SCRIPT="/root/antigravity-on-android/scripts/update-tools.sh"
+
+UPDATE_TOOLS=1
+for arg in "$@"; do
+    case "$arg" in
+        --no-update|--skip-update)
+            UPDATE_TOOLS=0
+            ;;
+        -h|--help)
+            echo "使用方法: t3-start [--no-update]"
+            echo "  --no-update : 起動前のツール自動アップデートをスキップします"
+            exit 0
+            ;;
+        *)
+            echo "[!] 不明なオプション: $arg"
+            echo "    使用方法: t3-start [--no-update]"
+            exit 1
+            ;;
+    esac
+done
 
 get_ip() {
     ip -4 addr show wlan0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' || true
@@ -177,6 +197,7 @@ if [ -f "$PID_FILE" ]; then
             echo "    ペアリング URL:     http://127.0.0.1:3773/pair#token=$TOKEN"
         fi
         echo "    ※ QRコード・再ペアリングは 't3-pair' を実行してください。"
+        echo "    ※ ツールの更新は 't3-update' で実行できます。"
         exit 0
     fi
 fi
@@ -186,8 +207,17 @@ pkill -f "proot-distro.*t3 serve" 2>/dev/null || true
 pkill -f "t3 serve" 2>/dev/null || true
 sleep 1
 
-echo "[*] T3 Code の最新アップデートを確認中 (t3 update)..."
-proot-distro login ubuntu -- bash -c "t3 update -y" || true
+if [ "$UPDATE_TOOLS" -eq 1 ]; then
+    echo "[*] T3 Code / agy / codex / opencode などのアップデートを確認中..."
+    if [ -f "$UPDATE_SCRIPT" ]; then
+        proot-distro login ubuntu -- bash "$UPDATE_SCRIPT" || true
+    else
+        # 旧バージョンからのアップグレード時は T3 Code のみ更新
+        proot-distro login ubuntu -- bash -c "t3 update -y" || true
+    fi
+else
+    echo "[*] ツールの自動アップデートをスキップしました (--no-update)。"
+fi
 
 echo "[*] T3 Code サーバーを起動中..."
 nohup proot-distro login ubuntu -- bash -c "export IS_SANDBOX=1; exec /usr/local/bin/t3 serve --host 0.0.0.0" < /dev/null > "$LOG_FILE" 2>&1 &
@@ -232,6 +262,19 @@ else
 fi
 EOF
 chmod +x "${PREFIX_BIN}/t3-start"
+
+# t3-update (agy / codex / opencode / claude / gh / t3 をまとめて更新)
+cat << 'EOF' > "${PREFIX_BIN}/t3-update"
+#!/data/data/com.termux/files/usr/bin/bash
+UPDATE_SCRIPT="/root/antigravity-on-android/scripts/update-tools.sh"
+if [ ! -f "$UPDATE_SCRIPT" ]; then
+    echo "[!] アップデートスクリプトが見つかりません: $UPDATE_SCRIPT"
+    echo "    install.sh を再実行してセットアップを更新してください。"
+    exit 1
+fi
+proot-distro login ubuntu -- bash "$UPDATE_SCRIPT"
+EOF
+chmod +x "${PREFIX_BIN}/t3-update"
 
 # t3-stop
 cat << 'EOF' > "${PREFIX_BIN}/t3-stop"
@@ -373,7 +416,8 @@ echo -e "${GREEN}===============================================================
 echo -e "${GREEN}  セットアップが完了しました！${NC}"
 echo -e "${GREEN}================================================================${NC}"
 echo ""
-echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (起動時に最新版へ自動更新、PINコード表示)"
+echo -e "  ${CYAN}t3-start${NC}           : T3 Code サーバーを起動 (起動時に T3 Code・agy・codex・opencode 等を自動更新)"
+echo -e "  ${CYAN}t3-update${NC}          : T3 Code・agy・codex・opencode・claude・gh をまとめて最新版に更新"
 echo -e "  ${CYAN}t3-pair${NC}            : T3 Code アプリ接続用 PINコード・QRコードを表示・再発行"
 echo -e "  ${CYAN}t3-stop${NC}            : T3 Code サーバーを停止"
 echo -e "  ${CYAN}t3-status${NC}          : サーバーの稼働状態と直近ログ・PINコードを確認"

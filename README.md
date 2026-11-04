@@ -72,7 +72,7 @@ Android 上の **Termux**（Google Play 版 / GitHub Releases 版 / F-Droid 版�
   - **スマートな通知管理**: 通知トレイが溢れないよう、直前の通知を自動で上書き管理（ID固定）。
   - ※ 通知をオフにしたい場合は環境変数 `TERMUX_NOTIFICATION=0` を指定して起動できます。
 - 📱 **直感的な操作コマンド**:
-  - `t3-start`、`t3-stop`、`t3-status`、`t3-quota`、`t3-shell`、`codex`、`gh`、`claude`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` などの Termux コマンドを自動生成。
+  - `t3-start`、`t3-stop`、`t3-status`、`t3-update`、`t3-quota`、`t3-shell`、`codex`、`gh`、`claude`、`t3-install-codex`、`t3-install-gh`、`t3-install-claude` などの Termux コマンドを自動生成。
 
 ---
 
@@ -174,11 +174,23 @@ Termux のプロンプトで以下を実行します。
 t3-start
 ```
 
-バックグラウンドで最新バージョンへのアップデート（`t3 update`）を自動確認した上でサーバーが起動し、コンソール画面に**Web接続先**と**T3 Code アプリ接続用 PIN コード (Token)** が表示されます。
+バックグラウンドで **T3 Code・Antigravity CLI (`agy`)・Codex・OpenCode・Claude Code・GitHub CLI** の最新版チェックとアップデートを自動実行した上でサーバーが起動し、コンソール画面に**Web接続先**と**T3 Code アプリ接続用 PIN コード (Token)** が表示されます。
 
 ```text
-[*] T3 Code の最新アップデートを確認中 (t3 update)...
+[*] T3 Code / agy / codex / opencode などのアップデートを確認中...
+[更新] T3 Code を最新版に更新中 (t3 update)...
 t3 is already on 0.1.0 (stable).
+[完了] T3 Code
+[更新] Antigravity CLI (agy) を最新版に更新中...
+[完了] Antigravity CLI (agy)
+[更新] OpenAI Codex CLI を最新版に更新中 (@openai/codex@latest)...
+[完了] OpenAI Codex CLI
+[スキップ] OpenCode CLI は未インストール
+[スキップ] Claude Code CLI は未インストール
+[スキップ] GitHub CLI (gh) は未インストール
+------------------------------------------------------------
+ アップデート結果: 正常 3 件 / スキップ 3 件 / 失敗 0 件
+------------------------------------------------------------
 [*] T3 Code サーバーを起動中...
 [✓] T3 Code サーバーが正常に起動しました (PID: 28456)
 
@@ -199,6 +211,8 @@ t3 is already on 0.1.0 (stable).
   💡 サーバー停止:             t3-stop
 ============================================================
 ```
+
+> 💡 起動前の自動アップデートを省略してすぐ起動したい場合は `t3-start --no-update` を実行してください。インストール済みツールだけを個別に更新したい場合は `t3-update` を実行します。
 
 ---
 
@@ -252,7 +266,8 @@ Android 端末内のブラウザはもちろん、Google Play で配信されて
 
 | コマンド | 説明 |
 | :--- | :--- |
-| `t3-start` | T3 Code サーバーを起動 (起動時に最新版へ自動更新、PINコード・接続先を表示) |
+| `t3-start` | T3 Code サーバーを起動 (起動時に T3 Code・agy・codex・opencode 等を自動更新、PINコード・接続先を表示) |
+| `t3-update` | T3 Code・agy・codex・opencode・claude・gh をまとめて最新版に更新 |
 | `t3-pair` | T3 Code アプリ接続用 PIN コード・ペアリング URL・QR コードを画面に表示 |
 | `t3-stop` | T3 Code サーバーを停止 |
 | `t3-status` | サーバーの稼働状態と直近ログ・PIN コードを確認 |
@@ -488,6 +503,7 @@ antigravity-on-android/
 ├── install.sh                  # Termux ホスト側エントリーポイント
 └── scripts/
     ├── setup-ubuntu.sh         # Ubuntu PRoot 環境の初期構築
+    ├── update-tools.sh         # T3 Code / agy / codex / opencode / claude / gh の一括アップデート
     ├── install-opencode.sh     # OpenCode CLI 更新 & プライベート設定の取得・適用
     ├── opencode-termux-notification.js # OpenCode 完了時のTermux通知プラグイン
     ├── install-antigravity.sh  # Antigravity プロバイダ構成 & ブリッジ登録

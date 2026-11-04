@@ -91,6 +91,7 @@ fi
 
 # Shortcut symlinks
 mkdir -p /usr/local/bin
+ln -sf "${SCRIPT_DIR}/update-tools.sh" /usr/local/bin/t3-update 2>/dev/null || true
 ln -sf "${SCRIPT_DIR}/setup-claude-vertex.sh" /usr/local/bin/t3-install-claude 2>/dev/null || true
 ln -sf "${SCRIPT_DIR}/install-codex.sh" /usr/local/bin/t3-install-codex 2>/dev/null || true
 ln -sf "${SCRIPT_DIR}/install-gh.sh" /usr/local/bin/t3-install-gh 2>/dev/null || true

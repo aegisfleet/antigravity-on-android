@@ -21,8 +21,14 @@ start_server() {
         rm -f "$PID_FILE"
     fi
 
-    echo "[*] T3 Code の最新アップデートを確認中 (t3 update)..."
-    t3 update -y 2>&1 || true
+    UPDATE_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update-tools.sh"
+    if [ -f "$UPDATE_SCRIPT" ]; then
+        echo "[*] インストール済みツールのアップデートを確認中..."
+        bash "$UPDATE_SCRIPT" 2>&1 || true
+    else
+        echo "[*] T3 Code の最新アップデートを確認中 (t3 update)..."
+        t3 update -y 2>&1 || true
+    fi
 
     echo "[*] T3 Code サーバーを起動中..."
     export PATH="/usr/local/bin:$PATH"
