@@ -59,6 +59,35 @@ def get_antigravity_quota_summary():
 
     return last_err or {"error": "Failed to fetch quota summary"}
 
+def authenticate_antigravity():
+    """Run agy's interactive login flow when quota access needs authentication."""
+    agy_bin = shutil.which("agy") or "/root/.local/bin/agy"
+    if not os.path.isfile(agy_bin) or not os.access(agy_bin, os.X_OK):
+        return False, "Antigravity CLI (agy) が見つかりません。agy をインストールしてください。"
+    if not sys.stdin.isatty():
+        return False, "認証が必要ですが対話端末ではありません。Termux で t3-quota を再実行してください。"
+
+    print("\nGoogle Antigravity の認証が必要です。agy の画面でログインし、完了後に exit してください。\n", flush=True)
+    try:
+        result = subprocess.run([agy_bin], check=False)
+    except Exception as e:
+        return False, f"agy の起動に失敗しました: {e}"
+    if result.returncode != 0:
+        return False, f"agy が終了コード {result.returncode} で終了しました。"
+    return True, None
+
+def get_antigravity_quota_with_auth():
+    """Authenticate on first use or 401, then retry the quota request once."""
+    token_missing = not os.path.isfile(AGY_TOKEN_FILE)
+    data = get_antigravity_quota_summary() if not token_missing else {"error": "OAuth token is missing"}
+    error = str(data.get("error", "")) if isinstance(data, dict) else ""
+    if token_missing or "HTTP 401" in error:
+        ok, auth_error = authenticate_antigravity()
+        if not ok:
+            return {"error": f"{error or 'Google 認証が必要です'}\n{auth_error}"}
+        data = get_antigravity_quota_summary()
+    return data
+
 def get_codex_quota_summary(timeout=7):
     """
     Fetches rate limits from OpenAI Codex via `codex app-server` JSON-RPC.
@@ -368,7 +397,7 @@ def get_quota_map_short(data):
     return res
 
 if __name__ == "__main__":
-    agy_data = get_antigravity_quota_summary()
+    agy_data = get_antigravity_quota_with_auth()
     codex_data = get_codex_quota_summary()
 
     if len(sys.argv) > 1 and sys.argv[1] == "--json":
