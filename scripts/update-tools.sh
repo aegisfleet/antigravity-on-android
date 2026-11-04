@@ -93,11 +93,8 @@ fi
 
 # 2. Antigravity CLI (agy)
 if has agy; then
-    info "Antigravity CLI (agy) を最新版に更新中..."
-    if curl -fsSL https://antigravity.google/cli/install.sh | bash; then
-        if [ -x "${HOME}/.local/bin/agy" ]; then
-            ln -sf "${HOME}/.local/bin/agy" /usr/local/bin/agy
-        fi
+    info "Antigravity CLI (agy) を最新版に更新中 (agy update)..."
+    if agy update; then
         ok "Antigravity CLI (agy)"
     else
         fail "Antigravity CLI (agy) の更新に失敗しました"
