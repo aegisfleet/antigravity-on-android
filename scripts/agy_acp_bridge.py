@@ -14,8 +14,6 @@ import shutil
 import subprocess
 import threading
 import signal
-import urllib.request
-import urllib.error
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -173,52 +171,23 @@ def find_agy_binary():
             return c
 def fetch_quota_summary():
     global cached_quota_summary, cached_quota_time
-    token_file = "/root/.gemini/antigravity-cli/antigravity-oauth-token"
-    if not os.path.exists(token_file):
-        return {"error": "OAuth token file not found. Please log in with agy first."}
     try:
-        with open(token_file, "r", encoding="utf-8") as f:
-            token_data = json.load(f)
-        access_token = token_data.get("token", {}).get("access_token")
-        if not access_token:
-            return {"error": "Access token is empty. Please log in with agy."}
+        from check_quota import get_antigravity_quota_summary
+        data = get_antigravity_quota_summary()
     except Exception as e:
-        return {"error": f"Failed to read oauth token: {e}"}
+        log_debug(f"Error fetching quota summary: {e}")
+        return {"error": f"Failed to fetch quota summary: {e}"}
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json",
-        # Google returns only the Claude/GPT bucket to the legacy CLI identity.
-        # The ACP client identity receives Gemini and Gemini 4 Argon buckets too.
-        "User-Agent": "antigravity/acp/1.3.0"
-    }
-    endpoints = [
-        "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
-        "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
-    ]
-    last_err = None
-    for url in endpoints:
-        req = urllib.request.Request(url, data=b"{}", headers=headers, method="POST")
+    if data and "groups" in data and len(data["groups"]) > 0:
+        cached_quota_summary = data
+        cached_quota_time = time.time()
         try:
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                if data and "groups" in data and len(data["groups"]) > 0:
-                    cached_quota_summary = data
-                    cached_quota_time = time.time()
-                    try:
-                        os.makedirs(os.path.dirname(QUOTA_CACHE_FILE), exist_ok=True)
-                        with open(QUOTA_CACHE_FILE, "w", encoding="utf-8") as f:
-                            json.dump({"timestamp": cached_quota_time, "data": data}, f)
-                    except Exception:
-                        pass
-                    return data
-                if data and not last_err:
-                    last_err = data
-        except Exception as e:
-            log_debug(f"Error fetching quota summary from {url}: {e}")
-            last_err = {"error": str(e)}
-
-    return last_err or {"error": "Failed to fetch quota summary"}
+            os.makedirs(os.path.dirname(QUOTA_CACHE_FILE), exist_ok=True)
+            with open(QUOTA_CACHE_FILE, "w", encoding="utf-8") as f:
+                json.dump({"timestamp": cached_quota_time, "data": data}, f)
+        except Exception:
+            pass
+    return data
 
 def get_quota_summary(force_refresh=False):
     global cached_quota_summary, cached_quota_time

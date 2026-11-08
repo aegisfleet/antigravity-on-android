@@ -16,8 +16,11 @@ from datetime import datetime, timezone
 
 # Antigravity settings
 AGY_TOKEN_FILE = "/root/.gemini/antigravity-cli/antigravity-oauth-token"
-AGY_QUOTA_URL = "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
-AGY_QUOTA_FALLBACK_URL = "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+# The Antigravity web UI and the agy CLI read the daily endpoint. Keep it first
+# so t3-quota shows the same values as the web; the production endpoint is only
+# a fallback for when the daily one returns no groups.
+AGY_QUOTA_URL = "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+AGY_QUOTA_FALLBACK_URL = "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
 
 # Codex settings
 CODEX_HOME = os.environ.get("CODEX_HOME", os.path.expanduser("~/.codex"))
