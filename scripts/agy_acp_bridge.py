@@ -28,6 +28,8 @@ cached_quota_summary = None
 cached_quota_time = 0
 cached_codex_summary = None
 cached_codex_time = 0
+cached_opencode_summary = None
+cached_opencode_time = 0
 
 FALLBACK_MODELS = [
     {"modelId": "gemini-3.8-flash-medium", "name": "Gemini 3.8 Flash (Medium)"},
@@ -227,10 +229,29 @@ def get_codex_summary(force_refresh=False):
         return cached_codex_summary
     return fetch_codex_summary()
 
-def format_quota_markdown(data, codex_data=None):
+def fetch_opencode_summary():
+    global cached_opencode_summary, cached_opencode_time
+    try:
+        from check_quota import get_opencode_quota_summary
+        data = get_opencode_quota_summary()
+    except Exception as e:
+        log_debug(f"Error fetching opencode summary: {e}")
+        data = None
+    cached_opencode_summary = data
+    cached_opencode_time = time.time()
+    return data
+
+def get_opencode_summary(force_refresh=False):
+    global cached_opencode_summary, cached_opencode_time
+    now = time.time()
+    if not force_refresh and cached_opencode_summary and (now - cached_opencode_time) < QUOTA_CACHE_TTL:
+        return cached_opencode_summary
+    return fetch_opencode_summary()
+
+def format_quota_markdown(data, codex_data=None, opencode_data=None):
     try:
         from check_quota import format_quota_markdown as _fmt_all
-        return _fmt_all(data, codex_data)
+        return _fmt_all(data, codex_data, opencode_data)
     except Exception as e:
         log_debug(f"Error formatting quota via check_quota: {e}")
         if not data:
@@ -318,7 +339,7 @@ HELP_MARKDOWN = """### 📖 Antigravity & T3 Code コマンド・機能ガイド
 | **`/goal <指示>`** | 目標が完全に達成されるまで、自律的に試行錯誤・検証を繰り返しながら粘り強く作業を完遂します（長時間作業向き）。 |
 | **`/teamwork-preview`** | 複数の自律エージェントが協調してチームとして大規模プロジェクトを分担・推進するプレビューモードです。 |
 | **`/grill-me <テーマ>`** | 設計方針や要件を明確にするため、AI側からユーザーへ対話形式で質問・インタビューを行って仕様を詰めます。 |
-| **`/quota`** / **`/使用量`** | Antigravity の契約プランに応じた残りリクエスト枠（5時間枠・週間枠、全回復予定時刻）をトークン消費ゼロで即座に表示します。 |
+| **`/quota`** / **`/使用量`** | Antigravity の契約プランに応じた残りリクエスト枠（5時間枠・週間枠、全回復予定時刻）に加え、Codex のレート制限と OpenCode 無料モデル（DeepSeek V4.1 Flash Free）の無料枠・当日利用量をトークン消費ゼロで即座に表示します。 |
 | **`/browser <指示>`** | Webブラウジングやドキュメント検索、Webアプリの調査を重視して作業を行います。 |
 | **`/learn`** | 解決した環境設定や指示内容を学習し、今後のセッションでも永続的に活用します。 |
 | **`/compact`** | これまでの会話履歴を要約・圧縮し、コンテキストトークンを節約します。 |
@@ -799,7 +820,8 @@ def handle_prompt_worker(session_id, user_text, msg_id, prompt_ctx):
             log_debug(f"Directly replying to quota intent for user text: {user_text[:60]}")
             quota_data = get_quota_summary(force_refresh=True)
             codex_data = get_codex_summary(force_refresh=True)
-            quota_text = format_quota_markdown(quota_data, codex_data)
+            opencode_data = get_opencode_summary(force_refresh=True)
+            quota_text = format_quota_markdown(quota_data, codex_data, opencode_data)
             send_response({
                 "jsonrpc": "2.0",
                 "method": "session/update",

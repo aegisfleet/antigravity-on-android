@@ -43,9 +43,9 @@ Android 上の **Termux**（Google Play 版 / GitHub Releases 版 / F-Droid 版�
   - **非同期キャンセル・ステアリング対応**: 生成処理中のチャット再入力や中断（`session/cancel` RPC）を非同期検知し、プロセスグループ（`SIGTERM`）を安全かつミリ秒単位で即座停止。タイムアウトエラー（`call-rpc failed for method session/cancel`）を完全に防止。
   - Gemini 3 系モデルでの `--effort medium` 自動付与や、モデル・セッションエラー時の自動フォールバック機構を内蔵。
 - 📊 **利用状況 (Quota / レート制限) のリアルタイム把握**:
-  - **T3 Code チャット画面**: `/quota` や `/usage` に加え、**「使用量」「使用状況」「/使用量」「残量」などの日本語**で送信するだけでも、**推論トークンを消費することなく**（0 トークンで）即座に最新の残りパーセント（Gemini / Claude 各グループの 5時間枠・週間枠、全回復予定時刻）をグラフィカルに表示。※ OpenAI Codex 導入時は Codex のレート制限・残り枠も自動で併記されます。
+  - **T3 Code チャット画面**: `/quota` や `/usage` に加え、**「使用量」「使用状況」「/使用量」「残量」などの日本語**で送信するだけでも、**推論トークンを消費することなく**（0 トークンで）即座に最新の残りパーセント（Gemini / Claude 各グループの 5時間枠・週間枠、全回復予定時刻）をグラフィカルに表示。※ OpenAI Codex 導入時は Codex のレート制限・残り枠も、OpenCode 導入時は DeepSeek V4.1 Flash Free の無料枠と当日の利用トークン数も自動で併記されます。
   - **モデル選択メニュー**: ドロップダウンのモデル名横に現在の残り枠（例: `Gemini 3.8 Flash (High) [残72%]`, `GPT-6-Luna [残99%]`）を動的表示。切り替え前に残量を一目で確認可能。
-  - **ターミナル連携**: Termux / Ubuntu 上で `t3-quota`（または日本語コマンド `使用量` / `使用状況`）を実行するだけでも即座に確認可能（Codex がインストールされていれば OpenAI Codex の利用状況も自動検出して一括表示）。
+  - **ターミナル連携**: Termux / Ubuntu 上で `t3-quota`（または日本語コマンド `使用量` / `使用状況`）を実行するだけでも即座に確認可能（Codex がインストールされていれば OpenAI Codex の利用状況も、OpenCode がインストールされていれば DeepSeek V4.1 Flash Free の無料枠も自動検出して一括表示）。
 - 🎯 **スラッシュコマンド補完 & トークン消費ゼロのヘルプガイド**:
   - **チャット欄での `/` 入力サジェスト**: 入力欄で `/` を入力するだけで、利用可能なコマンド群（`/boost`, `/plan`, `/goal`, `/teamwork-preview`, `/grill-me`, `/quota`, `/help` 等）が日本語の説明付きでポップアップ表示。
   - **トークン消費ゼロの即答ヘルプ**: `/help`、`/ヘルプ`、または「ヘルプ」「コマンド一覧」と送信するだけで、**推論トークンを消費することなく**（0 秒即答）利用可能な全コマンド・機能ガイドをグラフィカルに表示。
@@ -271,7 +271,7 @@ Android 端末内のブラウザはもちろん、Google Play で配信されて
 | `t3-pair` | T3 Code アプリ接続用 PIN コード・ペアリング URL・QR コードを画面に表示 |
 | `t3-stop` | T3 Code サーバーを停止 |
 | `t3-status` | サーバーの稼働状態と直近ログ・PIN コードを確認 |
-| `t3-quota` | Antigravity の利用状況（残りクォータ / レート制限）を確認（`使用量`, `使用状況` も利用可） |
+| `t3-quota` | Antigravity / Codex / OpenCode（DeepSeek V4.1 Flash Free）の利用状況（残りクォータ / レート制限 / 無料枠）を確認（`使用量`, `使用状況` も利用可） |
 | `t3-shell` | Ubuntu PRoot 環境の bash シェルに対話的にログイン |
 | `codex` | OpenAI Codex CLI（Termux から直接 `codex login` 等を実行可能） |
 | `gh` | GitHub CLI（Termux から直接 `gh auth login` 等を実行可能） |
